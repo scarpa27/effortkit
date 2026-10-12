@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+"""The effort command of an effortkit instance. See `effort --help`."""
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(os.path.realpath(__file__)).parents[1] / "lib"))
+from effortkit import cli  # noqa: E402
+
+if __name__ == "__main__":
+    cli.main(sys.argv[1:])

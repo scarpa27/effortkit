@@ -784,6 +784,9 @@ def analyze(words: list[str], out: list[str], cwd: Path) -> dict:
     elif verb == "effort":
         sub = plain[0] if plain else "status"
         r["opaque"] = sub not in EFFORT_READ and not (sub == "improve" and plain[1:2] == ["stats"])
+    elif verb == "effortkit":
+        # check renders the config in memory, and the others list. install and installer change things.
+        r["opaque"] = (plain[0] if plain else "help") not in ("check", "instances", "reports", "help")
     elif verb == "kiro-cli":
         r["opaque"] = plain[:1] not in (["agent"], ["settings"]) and not any(x in ("--version", "--help") for x in a)
     elif verb not in READ_VERBS:
@@ -798,11 +801,21 @@ def looks_like_path(tok: str) -> bool:
 
 VAR = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=(.*)$", re.S)
 REF = re.compile(r"\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?")
+# The hook and the agent's shell both start from the launch environment of the session, and an export in one shell
+# call reaches neither (measured, docs/design.md). So these names have the same value in the gate as in the command.
+SESSION_VARS = {"HOME", "EFFORTKIT_INSTANCE", "EFFORTKIT_EFFORT", "EFFORTKIT_INSTALL_TARGET"}
 
 
 def expand_vars(tok: str, env: dict[str, str]) -> str:
     """Replace the variables that this command set. An unknown name becomes SUBST, so the gate cannot read it as text."""
-    return REF.sub(lambda m: env.get(m.group(1), SUBST), tok)
+    def sub(m: re.Match) -> str:
+        name = m.group(1)
+        if name in env:
+            return env[name]
+        if name in SESSION_VARS and os.environ.get(name):
+            return os.environ[name]
+        return SUBST
+    return REF.sub(sub, tok)
 
 
 def assignment(words: list[str], env: dict[str, str]) -> None:

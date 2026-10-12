@@ -46,7 +46,7 @@ The brief names:
 </Safety rules that no round may weaken without an owner decision>
 
 <Output>
-`triage.md`, with one decision line per report, in exactly this form, so that `effort close` can file the reports:
+`triage.md`, with one decision line per report, in exactly this form, because the effort command reads these lines when the round closes and files each decided report:
 ```markdown
 # Triage <effort>
 ## Themes

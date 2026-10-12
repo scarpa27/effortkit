@@ -46,7 +46,8 @@ RESEARCH = [
     rf"(?:openssl +s_client|getent +hosts|curl +-sI){ARGS}",
 ]
 # The effort commands that only read, or that write one inbox file. The gate refuses the others anyway.
-EFFORT_READ = [rf"(?:{PLAIN}*/)?effort +(?:status|find|logs|wait|preflight|help|kb|report|plan-review|improve +stats){ARGS}"]
+EFFORT_READ = [rf"(?:{PLAIN}*/)?effort +(?:status|find|logs|wait|preflight|help|kb|report|plan-review|improve +stats){ARGS}",
+               rf"(?:{PLAIN}*/)?effortkit +(?:check|instances|reports|help){ARGS}"]
 
 
 def segment(pattern: str) -> str:

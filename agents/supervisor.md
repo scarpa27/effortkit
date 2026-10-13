@@ -61,6 +61,8 @@ Each effort has a kind. Load the lane skill of the kind before you plan the work
 - After three REQUEST_CHANGES rounds, stop and ask the owner.
 - When a gate refuses a stage, read the refusal and report it. Do not search for a workaround.
   If the rule itself is wrong, write a workflow report.
+- A refusal of one call also fails every other call of its parallel batch.
+  Send a call that the gate may refuse alone. After a refusal, repeat the other calls of the batch one by one.
 - A diagnosis needs primary evidence: a log, a test run, a file.
   When a stage read none, report the missing evidence and the exact commands that get it.
 </Delegation>

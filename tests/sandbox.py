@@ -130,9 +130,11 @@ class RealInstance:
         sh("git", "commit", "-qm", "TOY-1: first", cwd=src, env=self.env)
         self.remote = self.dir / "toy.git"
         sh("git", "clone", "-q", "--bare", src, self.remote, env=self.env)
-        # Kit efforts branch from this clone, never from the real kit repository.
+        # Kit efforts branch from main of this clone, never from the real kit repository.
+        # In a kit tree the clone has no local main, so main is set to the commit under test.
         self.kit_repo = self.dir / "kit"
         sh("git", "clone", "-q", core.KIT, self.kit_repo, env=self.env)
+        sh("git", "checkout", "-q", "-B", "main", cwd=self.kit_repo, env=self.env)
         self.env["EFFORTKIT_KIT_REPO"] = str(self.kit_repo)
         self.env["EFFORTKIT_TMUX_SOCKET"] = f"ek-test-{os.getpid()}-{self.dir.name}"
         fake = self.dir / "bin/kiro-cli"

@@ -2,6 +2,8 @@
 - The workflow contract is `{{contract}}`. Read it when a rule is unclear.
 - A gate checks every tool call. A refusal names the gate, the reason and the fix.
   Do not search for a workaround. If the rule blocks your task, report it and stop.
+- A refusal of one call also fails every other call of its parallel batch.
+  Send a call that the gate may refuse alone. After a refusal, repeat the other calls of the batch one by one.
 - Do not use the subagent tool.
 - Use absolute paths in every artifact.
 - Reply to the supervisor tersely: what you did, the artifact path, the open points.

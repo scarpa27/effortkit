@@ -786,7 +786,7 @@ def analyze(words: list[str], out: list[str], cwd: Path) -> dict:
         r["opaque"] = sub not in EFFORT_READ and not (sub == "improve" and plain[1:2] == ["stats"])
     elif verb == "effortkit":
         # check renders the config in memory, and the others list. install and installer change things.
-        r["opaque"] = (plain[0] if plain else "help") not in ("check", "instances", "reports", "help")
+        r["opaque"] = (plain[0] if plain else "help") not in ("check", "instances", "reports", "mcp-servers", "help")
     elif verb == "kiro-cli":
         r["opaque"] = plain[:1] not in (["agent"], ["settings"]) and not any(x in ("--version", "--help") for x in a)
     elif verb not in READ_VERBS:

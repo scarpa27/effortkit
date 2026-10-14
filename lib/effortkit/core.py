@@ -114,6 +114,8 @@ HOME = Path.home()
 SECRET_FILES = [HOME / ".git-credentials", HOME / ".netrc", HOME / ".npmrc", HOME / ".pypirc",
                 HOME / ".docker/config.json", HOME / ".kube/config", HOME / ".m2/settings.xml",
                 HOME / ".m2/settings-security.xml", HOME / ".kiroenv",
+                # MCP server entries often carry tokens in their env. `effortkit mcp-servers` prints the names only.
+                HOME / ".kiro/settings/mcp.json",
                 *(HOME / ".local/share/kiro-cli" / f"data.sqlite3{s}" for s in ("", "-wal", "-shm"))]
 SECRET_DIRS = [HOME / ".ssh", HOME / ".gnupg", HOME / ".aws", HOME / ".gitlab", HOME / ".config/glab-cli",
                HOME / ".config/gh", HOME / ".password-store", HOME / ".azure", HOME / ".config/gcloud"]

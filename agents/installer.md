@@ -27,7 +27,8 @@ Ask few questions. Inspect first, then ask only what the repository cannot tell 
    Ask the owner to confirm or correct it. Ask a question only for a value that the repository does not show:
    - Who may approve plans: the owner only. Do not ask.
    - The models per role, when the defaults do not suit.
-   - The extra tools per role, for example an MCP server for tickets or web search. Check `~/.kiro/settings/mcp.json` for the server names, and never read a token.
+   - The extra tools per role, for example an MCP server for tickets or web search. `effortkit mcp-servers` prints the server names.
+     The gate refuses a read of the MCP settings file, because it holds tokens.
    - When the improvement round starts: on effort close (recommended) or manual, and the threshold.
 </Interview>
 

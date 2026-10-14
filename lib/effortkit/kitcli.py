@@ -7,6 +7,7 @@
   effortkit check <dir> [--validate] check the config and the overlay of an instance, or of an overlay tree
   effortkit instances                the registered instances, with their open efforts and reports
   effortkit reports [--scope kit]    the open workflow reports of every registered instance
+  effortkit mcp-servers              the MCP server names for mcp.<role>, without their settings, which hold tokens
   effortkit selftest                 run the kit tests
 """
 from __future__ import annotations
@@ -127,6 +128,15 @@ def cmd_reports(a) -> None:
         print("no open workflow reports" + (f" with scope {a.scope}" if a.scope else ""))
 
 
+def cmd_mcp_servers(a) -> None:
+    """The MCP server names that a role may list in mcp.<role>. The settings stay unread, because they hold tokens."""
+    names = []
+    for path in (core.HOME / ".kiro/settings/mcp.json", Path.cwd() / ".kiro/settings/mcp.json"):
+        data = core.read_json(path) or {}
+        names += [n for n in (data.get("mcpServers") or {}) if n not in names]
+    print("\n".join(f"@{n}" for n in names) if names else "no MCP servers are configured")
+
+
 def cmd_selftest(a) -> None:
     sys.exit(subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-t", "."], cwd=core.KIT).returncode)
 
@@ -142,6 +152,7 @@ def main(argv: list[str]) -> None:
     p = sp.add_parser("check"); p.add_argument("dir"); p.add_argument("--validate", action="store_true"); p.set_defaults(fn=cmd_check)
     p = sp.add_parser("instances"); p.set_defaults(fn=cmd_instances)
     p = sp.add_parser("reports"); p.add_argument("--scope", choices=improve.SCOPES); p.set_defaults(fn=cmd_reports)
+    p = sp.add_parser("mcp-servers"); p.set_defaults(fn=cmd_mcp_servers)
     p = sp.add_parser("selftest"); p.set_defaults(fn=cmd_selftest)
     p = sp.add_parser("help"); p.set_defaults(fn=lambda a: ap.print_help())
     args = ap.parse_args(argv or ["help"])

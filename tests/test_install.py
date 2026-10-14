@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tests.sandbox import CONFIG, EFFORT, EFFORTKIT, RealInstance, sh
+from tests.sandbox import CONFIG, EFFORT, EFFORTKIT, FakeInstance, RealInstance, git_env, sh
 from effortkit import core, install
 
 
@@ -125,6 +125,29 @@ class CheckConfig(unittest.TestCase):
     def test_a_documented_test_command_with_a_placeholder_matches_its_pattern(self):
         self.assertEqual(self.check(tests={"commands": ["mvn -pl <module> -am test"],
                                            "patterns": [r"mvn(?: -pl \S+| -am| -q)* test(?: -D\S+)*"]}), [])
+
+
+class McpServers(unittest.TestCase):
+    def test_names_only_and_the_settings_stay_secret(self):
+        home = Path(tempfile.mkdtemp(prefix="ek-home-"))
+        try:
+            (home / ".kiro/settings").mkdir(parents=True)
+            (home / ".kiro/settings/mcp.json").write_text(json.dumps({"mcpServers": {
+                "mcp-web-search": {"command": "x"}, "mcp-tickets": {"command": "y", "env": {"TOKEN": "s3cret"}}}}))
+            env = {**git_env(home), "HOME": str(home)}
+            p = sh(sys.executable, EFFORTKIT, "mcp-servers", env=env, cwd=home, check=False)
+            self.assertEqual((p.returncode, p.stdout), (0, "@mcp-web-search\n@mcp-tickets\n"))
+            r = FakeInstance()
+            try:
+                r.env["HOME"] = str(home)
+                code, err = r.gate("explorer", "read", {"operations": [{"mode": "Line", "path": str(home / ".kiro/settings/mcp.json")}]},
+                                   cwd=r.tree("e1"))
+                self.assertEqual(code, 2, err)
+                self.assertIn("holds credentials", err)
+            finally:
+                r.cleanup()
+        finally:
+            shutil.rmtree(home, ignore_errors=True)
 
 
 class InstallRefusals(unittest.TestCase):

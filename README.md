@@ -16,7 +16,7 @@ An improvement loop turns those reports into approved changes, so the workflow f
 
 ## Set up a new project
 
-Interactive, with the installer agent:
+Interactive, with the installer agent, from the folder of the kit:
 
 ```bash
 bin/effortkit installer ~/efforts/<name>

@@ -45,6 +45,39 @@ This instance of effortkit lives in `{{instance}}`. The kit lives in `{{kit}}`.
 - Stages: EXPLORING, RESEARCHING, INVESTIGATING, PLANNING, AWAITING_ANSWERS, APPROVED, IMPLEMENTING, TESTING, REVIEWING, AWAITING_DECISION, BLOCKED, COMPLETE, ABANDONED.
 - The stage informs the owner. It is not a permission, and no gate reads it.
 
+## Plan format
+
+The planner writes `task.md` and `questions.md` in this format. The improver does too, in a kit or overlay effort.
+
+`task.md`:
+```markdown
+# Task: <short description>
+## Request
+<faithful summary>
+## Key context
+<constraints, patterns, integration points>
+## Waves
+### Wave 1: <goal>
+| Sub-task | Agent | Details | Artifact |
+| --- | --- | --- | --- |
+## Files to create or change
+<absolute paths>
+## Tests
+<the tests to write or change, and the commands that run them>
+## Exit criteria
+<what must be true at the end, stated as properties, not as counts>
+## Risks and assumptions
+<material ones only>
+```
+`questions.md`: exactly `NO_QUESTIONS`, or one block per question in this format:
+```markdown
+## Q1: <the question, in one sentence>
+Recommended: <your recommended answer>
+Depends on: <the fact that the safe answer depends on>
+Why: <short context, optional>
+```
+The plan-review page shows each block as a card, so keep the format exact.
+
 ## Read and write
 
 - Every session may read every plan folder, the knowledge and the reference material.
@@ -76,6 +109,14 @@ This instance of effortkit lives in `{{instance}}`. The kit lives in `{{kit}}`.
   The owner approves that plan like any other, and the developer implements it in a tree of the layer.
 - `effort close` of an improvement effort files each report that `triage.md` decided into `worklog/improvements/done/` and the ledger.
 - The aim is fewer reports per effort over time. `effort improve stats` shows the trend.
+
+## Skills
+
+- Every skill that an agent loads is a workspace copy in `{{instance}}/.kiro/skills/`.
+  `effort gen` makes the copies from the kit and from `{{overlay}}/skills/`.
+- No agent loads a skill from the machine, for example from `~/.kiro/skills`.
+  A skill that a role needs goes into the kit (an effort of kind kit) or into the overlay (an effort of kind overlay).
+- Do not edit a workspace copy. The next `effort gen` replaces it.
 
 ## Knowledge
 

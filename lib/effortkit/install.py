@@ -12,7 +12,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from . import core, gen, repohooks
+from . import core, gen, repohooks, skills
 
 INSTANCE_IGNORE = """# The instance repository tracks instance.json and overlay/. The rest is local state or generated.
 /worklog/
@@ -20,6 +20,7 @@ INSTANCE_IGNORE = """# The instance repository tracks instance.json and overlay/
 /locks/
 /product.git/
 /.kiro/
+/.kiro-home/
 /bin/
 *~
 __pycache__/
@@ -98,6 +99,7 @@ def check_config(root: Path, render: bool = True) -> list[str]:
             errors.append(f"push.protected_branches: {b!r} is not a plain branch name")
     if cfg["improve"].get("trigger") not in ("on-close", "manual"):
         errors.append("improve.trigger must be on-close or manual")
+    errors += skills.problems(inst)
     if render and not errors:
         try:
             v = gen.variables(inst)
@@ -124,6 +126,16 @@ def validate_with_kiro(inst: core.Instance) -> list[str]:
     if not shutil.which("kiro-cli"):
         return ["kiro-cli is not on PATH, so the agent configs were not validated"]
     out = []
+    p = subprocess.run(["kiro-cli", "chat", "--list-models", "--format", "json"], capture_output=True, text=True)
+    try:
+        available = {m["model_id"] for m in json.loads(p.stdout)["models"]}
+    except (ValueError, KeyError, TypeError):
+        available = set()
+        out.append(f"kiro-cli chat --list-models gave no model list: {(p.stderr or p.stdout).strip()[:200]}")
+    for role in [core.SUPERVISOR, *inst.roles]:
+        model = inst.model(role)
+        if available and model and model not in available:
+            out.append(f"role {role}: this account offers no model {model}. Set models.{role} or models.default.")
     for f in sorted((inst.kiro / "agents").glob("*.json")):
         p = subprocess.run(["kiro-cli", "agent", "validate", "--path", str(f)], capture_output=True, text=True)
         text = (p.stdout + p.stderr).strip()

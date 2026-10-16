@@ -96,8 +96,10 @@ DEFAULTS: dict = {
     "models": {"default": "claude-opus-5.5", "tester": "claude-sonnet-5.5", "reviewer": "claude-sonnet-5.5"},
     # role -> list of tool names, for example {"researcher": ["@mcp-web-search"]}.
     "mcp": {},
-    # role -> list of SKILL.md globs or folders outside the kit and the overlay.
-    "extra_skills": {},
+    # role -> more skill names for that role. A name resolves to skills/ of the kit or overlay/skills/ of the instance.
+    "skills": {},
+    # Kit skill names that no role of this instance loads.
+    "skills_off": [],
     "roles": {},
     "kinds": {},
     "improve": {"trigger": "on-close", "threshold": 3},
@@ -447,12 +449,26 @@ class Effort:
         return [l.strip("-* ").strip() for l in lines if l.strip("-* ").strip() and not l.startswith("#")]
 
 
-def pid_alive(pid: int, needle: str = "kiro") -> bool:
+def process_cmdline(pid: int, proc: bool | None = None) -> str | None:
+    """The command line of a live process, or None. /proc where it exists, else ps, which macOS has."""
+    if proc is None:
+        proc = Path("/proc/self").exists()
+    if proc:
+        try:
+            return Path(f"/proc/{pid}/cmdline").read_bytes().replace(b"\0", b" ").decode(errors="replace")
+        except OSError:
+            return None
+    import subprocess
     try:
-        cmd = Path(f"/proc/{pid}/cmdline").read_bytes().replace(b"\0", b" ").decode(errors="replace")
-    except OSError:
-        return False
-    return needle in cmd
+        p = subprocess.run(["ps", "-o", "command=", "-p", str(pid)], capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return p.stdout.strip() if p.returncode == 0 and p.stdout.strip() else None
+
+
+def pid_alive(pid: int, needle: str = "kiro") -> bool:
+    cmd = process_cmdline(pid)
+    return cmd is not None and needle in cmd
 
 
 def runs_dir(e: Effort) -> Path:

@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 from tests.sandbox import CONFIG, EFFORT, EFFORTKIT, FakeInstance, RealInstance, git_env, sh
-from effortkit import core, install
+from effortkit import core, install, skills
 
 
 class Install(unittest.TestCase):
@@ -39,6 +39,10 @@ class Install(unittest.TestCase):
         agents = sorted(p.stem for p in (root / ".kiro/agents").glob("*.json"))
         self.assertEqual(agents, sorted(["supervisor", *core.BUILTIN_ROLES]))
         self.assertTrue(os.access(root / "bin/effort", os.X_OK))
+        self.assertTrue(os.access(root / "bin/effortkit", os.X_OK))
+        installed = sorted(p.parent.name for p in (root / ".kiro/skills").glob("*/SKILL.md"))
+        self.assertEqual(installed, sorted(skills.installed(core.Instance(root))))
+        self.assertLessEqual({"lavish", "caveman", "asd-ste100", "grill-me", "grilling", "plan-review"}, set(installed))
         registry = json.loads((self.r.dir / "xdg/effortkit/instances.json").read_text())
         self.assertIn(str(root), registry["instances"])
 

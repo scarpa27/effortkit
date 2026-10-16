@@ -35,7 +35,7 @@ READ_ONLY = [
     rf"|mkdir|rm|cp|mv|touch|tee|unzip|zipinfo){ARGS}",
     # A test suite or a module that only reads. The gate refuses it in a folder where an agent can write code.
     rf"(?:{PLAIN}*/)?python3?(?:\.\d+)?(?: +-[A-Za-z])* +-m +(?:unittest|pytest|zipfile|json\.tool|site|sysconfig|platform){ARGS}",
-    rf"kiro-cli +(?:--version|--help|agent +list|agent +validate{ARGS}|settings +list|settings +--help|settings +\w+(?:\.\w+)+)"
+    rf"kiro-cli +(?:--version|--help|chat +--list-models|agent +list|agent +validate{ARGS}|settings +list|settings +--help|settings +\w+(?:\.\w+)+)"
     rf"(?: +(?:-f|--format) +\w+)?(?: +{REDIRECT})*",
 ]
 # The forge command line tools. The gate refuses their writes.
@@ -47,7 +47,7 @@ RESEARCH = [
 ]
 # The effort commands that only read, or that write one inbox file. The gate refuses the others anyway.
 EFFORT_READ = [rf"(?:{PLAIN}*/)?effort +(?:status|find|logs|wait|preflight|help|kb|report|plan-review|improve +stats){ARGS}",
-               rf"(?:{PLAIN}*/)?effortkit +(?:check|instances|reports|mcp-servers|help){ARGS}"]
+               rf"(?:{PLAIN}*/)?effortkit +(?:check|instances|reports|mcp-servers|skills|help){ARGS}"]
 
 
 def segment(pattern: str) -> str:

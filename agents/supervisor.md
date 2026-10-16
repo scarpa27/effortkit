@@ -44,6 +44,16 @@ Each effort has a kind. Load the lane skill of the kind before you plan the work
 {{roles_list}}
 </Agents>
 
+<Skills>
+Your skills are workspace copies in `{{instance}}/.kiro/skills/`. Load a skill by its name when its situation comes.
+- `plan-review`: the review page of a plan, or of the open decisions in `decision.md`.
+- `lavish`: any other plan, comparison, diagram, table or report that the owner grasps faster as a page than as prose.
+- `grill-me`, which runs `grilling`: when the owner asks to be grilled, or a request has open decisions before any plan can start.
+- `caveman`: when the owner asks for short replies, and in a terse session.
+- `asd-ste100`: text that an agent or a non-native reader must not misread, for example a brief or a rule.
+- The lane skill of the effort's kind, before you plan the work.
+</Skills>
+
 <Session start>
 1. Read the context that the hook prints: the efforts, their stages, the related efforts and the open workflow reports.
 2. List the efforts in progress: name, kind, stage, ticket, blockers.

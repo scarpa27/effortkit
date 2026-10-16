@@ -2,9 +2,11 @@
 
   <instance>/.kiro/agents/<role>.json and <role>.md   one config and one rendered prompt per role
   <instance>/.kiro/steering/*.md                      the rendered kit steering
+  <instance>/.kiro/skills/<name>/                     a copy of every skill that some role loads
   <instance>/.kiro/settings/cli.json                  the default agent and the configured settings
-  <instance>/bin/effort                               the effort command of this instance
+  <instance>/bin/effort, bin/effortkit                the effort and kit commands, for the owner and the agents
   <instance>/.kiro/gen.json                           what gen wrote, and the fingerprint of its inputs
+  <instance>/.kiro-home/settings/                     the KIRO_HOME of every session: links to the machine settings only
 
 Trust follows measurements of kiro-cli (docs/design.md): a headless stage needs trusted tools, a trusted tool ignores allowedPaths,
 so the gate enforces the paths. Read-only roles get an untrusted shell with an anchored allowlist and
@@ -21,7 +23,7 @@ import sys
 from pathlib import Path
 
 from . import allowlist as al
-from . import core
+from . import core, skills
 
 PLACEHOLDER = re.compile(r"\{\{\s*([a-z_]+)\s*\}\}")
 GEN_FILE = "gen.json"
@@ -72,6 +74,8 @@ def variables(inst: core.Instance) -> dict:
         "kinds_list": bullets([f"`{n}`: {s.get('about', '')}. Lane skill `{s.get('lane', 'none')}`."
                                for n, s in inst.kinds.items()], "none"),
         "tester_globs": ", ".join(f"`{g}`" for g in inst.config["tester_globs"]),
+        "artifact_style": ("in ASD-STE100: follow the `asd-ste100` skill" if inst.config["style"].get("ste100")
+                           else "in plain, complete sentences"),
     }
 
 
@@ -101,20 +105,13 @@ def has_files(folder: Path, pattern: str) -> bool:
     return folder.is_dir() and any(folder.glob(pattern))
 
 
-def skill_uri(entry: str) -> str:
-    return entry if "://" in entry else f"skill://{os.path.expanduser(entry)}"
-
-
 def resources(inst: core.Instance, role: str) -> list[str]:
     out = [f"file://{inst.kiro}/steering/*.md"]
     if has_files(inst.overlay / "steering", "*.md"):
         out.append(f"file://{inst.overlay}/steering/*.md")
-    if role == core.SUPERVISOR:
-        out.append(f"skill://{core.KIT}/skills/**/SKILL.md")
-    if has_files(inst.overlay / "skills", "**/SKILL.md"):
-        out.append(f"skill://{inst.overlay}/skills/**/SKILL.md")
+    # Only the workspace copies, never the kit or ~/.kiro/skills, so that the machine cannot change what an agent loads.
+    out += [f"skill://{inst.kiro}/skills/{name}/SKILL.md" for name in skills.for_role(inst, role)]
     spec = inst.roles.get(role, {})
-    out += [skill_uri(s) for s in inst.config["extra_skills"].get(role, [])]
     out += [f"file://{inst.root / r}" if not r.startswith("/") and "://" not in r else r for r in spec.get("resources", [])]
     return out
 
@@ -172,21 +169,22 @@ def agent_config(inst: core.Instance, role: str) -> dict:
             "hooks": hooks}
 
 
-def wrapper(inst: core.Instance) -> str:
+def wrapper(inst: core.Instance, command: str) -> str:
     return ("#!/bin/sh\n"
-            "# The effort command of this instance. effortkit generates it: edit instance.json, then run `effort gen`.\n"
+            f"# The {command} command of this instance. effortkit generates it: edit instance.json, then run `effort gen`.\n"
             f"EFFORTKIT_INSTANCE={shlex.quote(str(inst.root))}\n"
             "export EFFORTKIT_INSTANCE\n"
-            f"exec {shlex.quote(PYTHON)} {shlex.quote(str(core.KIT / 'bin/effort'))} \"$@\"\n")
+            f"exec {shlex.quote(PYTHON)} {shlex.quote(str(core.KIT / 'bin' / command))} \"$@\"\n")
 
 
 def inputs(inst: core.Instance) -> list[Path]:
     kit = [core.KIT / "lib/effortkit" / f for f in ("gen.py", "core.py", "allowlist.py")]
+    kit += [core.KIT / "lib/effortkit/skills.py"]
     kit += sorted((core.KIT / "agents").glob("*.md")) + sorted((core.KIT / "steering").glob("*.md"))
-    kit += sorted((core.KIT / "skills").glob("**/SKILL.md"))
+    kit += sorted(p for p in (core.KIT / "skills").rglob("*") if p.is_file())
     own = [inst.root / core.INSTANCE_FILE]
-    for sub, pattern in (("agents", "*.md"), ("steering", "*.md"), ("skills", "**/SKILL.md")):
-        own += sorted((inst.overlay / sub).glob(pattern)) if (inst.overlay / sub).is_dir() else []
+    for sub, pattern in (("agents", "*.md"), ("steering", "*.md"), ("skills", "**/*")):
+        own += sorted(p for p in (inst.overlay / sub).glob(pattern) if p.is_file()) if (inst.overlay / sub).is_dir() else []
     return kit + own
 
 
@@ -212,10 +210,65 @@ def stale_reason(inst: core.Instance) -> str:
     return ""
 
 
+KIRO_HOME_DIR = ".kiro-home"
+# Measured 2026-10-23, kiro-cli 2.33.1: a custom agent loads every skill of ~/.kiro/skills and every file of
+# ~/.kiro/steering besides its own resources. So each session runs with KIRO_HOME at a folder that holds only links to
+# the settings and the MCP servers of the machine. Those stay machine config: an instance never copies a token.
+MACHINE_SETTINGS = ("cli.json", "mcp.json")
+
+
+def machine_kiro_home() -> Path:
+    """The kiro home of the machine, also when this process runs inside a session of an instance."""
+    for key in ("EFFORTKIT_MACHINE_KIRO_HOME", "KIRO_HOME"):
+        value = os.environ.get(key, "")
+        # kiro-cli ignores a relative KIRO_HOME, so the kit does too.
+        if value.startswith("/") and Path(value).name != KIRO_HOME_DIR:
+            return Path(value)
+    return core.HOME / ".kiro"
+
+
+def ensure_kiro_home(dest: Path) -> Path:
+    """dest/settings/<file> links to the settings of the machine. Nothing else of the machine is in dest."""
+    settings = dest / "settings"
+    settings.mkdir(parents=True, exist_ok=True)
+    source = machine_kiro_home() / "settings"
+    for name in MACHINE_SETTINGS:
+        link, target = settings / name, source / name
+        if link.is_symlink() and os.readlink(link) == str(target):
+            continue
+        if link.is_symlink() or link.exists():
+            link.unlink()
+        if target.exists():
+            link.symlink_to(target)
+    return dest
+
+
+def write_files(files: dict[Path, str | bytes], old: list[str]) -> None:
+    """Write the generated files, and remove the files of the last run that this run no longer writes."""
+    for stale in set(old) - {str(p) for p in files}:
+        path = Path(stale)
+        path.unlink(missing_ok=True)
+        for parent in path.parents:
+            try:
+                parent.rmdir()  # Only an empty folder goes, so a folder of a live skill stays.
+            except OSError:
+                break
+    for path, content in files.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if isinstance(content, bytes):
+            path.write_bytes(content)
+        else:
+            path.write_text(content, encoding="utf-8")
+
+
 def generate(inst: core.Instance) -> list[Path]:
     v = variables(inst)
     roles = [core.SUPERVISOR] + list(inst.roles)
-    files: dict[Path, str] = {}
+    try:
+        chosen = skills.installed(inst)
+    except skills.SkillError as exc:
+        raise GenError(str(exc)) from exc
+    files: dict[Path, str | bytes] = dict(skills.copies(chosen, inst.kiro / "skills"))
     for role in roles:
         files[inst.kiro / "agents" / f"{role}.md"] = role_prompt(inst, role, v)
         files[inst.kiro / "agents" / f"{role}.json"] = json.dumps(agent_config(inst, role), indent=2) + "\n"
@@ -223,14 +276,13 @@ def generate(inst: core.Instance) -> list[Path]:
         files[inst.kiro / "steering" / src.name] = render(src.read_text(encoding="utf-8"), v, str(src))
     settings = core.merge({"chat.defaultAgent": core.SUPERVISOR}, inst.config.get("settings") or {})
     files[inst.kiro / "settings/cli.json"] = json.dumps(settings, indent=2) + "\n"
-    files[inst.bin / "effort"] = wrapper(inst)
+    for command in ("effort", "effortkit"):
+        files[inst.bin / command] = wrapper(inst, command)
     old = core.read_json(inst.kiro / GEN_FILE) or {}
-    for stale in set(old.get("files", [])) - {str(p) for p in files}:
-        Path(stale).unlink(missing_ok=True)
-    for path, text in files.items():
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text, encoding="utf-8")
-    (inst.bin / "effort").chmod(0o755)
+    write_files(files, old.get("files", []))
+    for command in ("effort", "effortkit"):
+        (inst.bin / command).chmod(0o755)
+    ensure_kiro_home(inst.root / KIRO_HOME_DIR)
     core.write_json_once(inst.kiro / GEN_FILE, {"generated": core.now_utc(), "fingerprint": fingerprint(inst),
                                                 "kit": str(core.KIT), "files": sorted(str(p) for p in files)})
     return sorted(files)
@@ -238,14 +290,23 @@ def generate(inst: core.Instance) -> list[Path]:
 
 # ---------------------------------------------------------------- the installer, which belongs to the kit
 
+def installer_skills() -> dict[str, Path]:
+    names: list[str] = []
+    for n in skills.INSTALLER_SKILLS:
+        names += [m for m in [n, *skills.COMPANIONS.get(n, [])] if m not in names]
+    shipped = skills.kit_skills()
+    return {n: shipped[n] for n in names}
+
+
 def installer_config() -> dict:
     gate = shlex.join([PYTHON, str(core.KIT / "lib/effortkit/gate.py"), "--install-target-env", "pre", core.INSTALLER])
-    read_only = al.allowlist(al.READ_ONLY, al.FORGE_READ, [rf"(?:{al.PLAIN}*/)?effortkit +(?:help|instances|--help|check|mcp-servers){al.ARGS}"])
+    read_only = al.allowlist(al.READ_ONLY, al.FORGE_READ, [rf"(?:{al.PLAIN}*/)?effortkit +(?:help|instances|--help|check|mcp-servers|skills){al.ARGS}"])
     return {"name": core.INSTALLER, "description": "Sets up effortkit for a new project in an interactive interview",
             "model": core.DEFAULTS["models"]["default"], "prompt": f"file://{core.KIT}/.kiro/agents/installer.md",
             "tools": ["read", "write", "glob", "grep", "code", "shell", "thinking"],
             "allowedTools": ["read", "write", "glob", "grep", "code", "thinking"],
-            "resources": [f"file://{core.KIT}/README.md", f"file://{core.KIT}/docs/config.md"],
+            "resources": [f"file://{core.KIT}/README.md", f"file://{core.KIT}/docs/config.md"]
+                         + [f"skill://{core.KIT}/.kiro/skills/{n}/SKILL.md" for n in installer_skills()],
             # No denyByDefault: a command outside the list asks the owner, who sits at the terminal.
             "toolsSettings": {"shell": {"allowedCommands": read_only}},
             "includeMcpJson": False, "hooks": {"preToolUse": [{"command": gate}]}}
@@ -254,9 +315,11 @@ def installer_config() -> dict:
 def generate_kit() -> list[Path]:
     v = {"kit": core.KIT, "python": PYTHON, "registry": core.registry_path()}
     src = core.KIT / "agents/installer.md"
-    files = {core.KIT / ".kiro/agents/installer.md": render(src.read_text(encoding="utf-8"), v, str(src)),
-             core.KIT / ".kiro/agents/installer.json": json.dumps(installer_config(), indent=2) + "\n"}
-    for path, text in files.items():
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text, encoding="utf-8")
+    files: dict[Path, str | bytes] = dict(skills.copies(installer_skills(), core.KIT / ".kiro/skills"))
+    files[core.KIT / ".kiro/agents/installer.md"] = render(src.read_text(encoding="utf-8"), v, str(src))
+    files[core.KIT / ".kiro/agents/installer.json"] = json.dumps(installer_config(), indent=2) + "\n"
+    record = core.KIT / ".kiro" / GEN_FILE
+    write_files(files, (core.read_json(record) or {}).get("files", []))
+    ensure_kiro_home(core.KIT / KIRO_HOME_DIR)
+    core.write_json_once(record, {"generated": core.now_utc(), "files": sorted(str(p) for p in files)})
     return sorted(files)

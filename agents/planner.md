@@ -25,34 +25,7 @@ The brief names the plan folder and the artifacts to read:
 </Workflow>
 
 <Output>
-`task.md`:
-```markdown
-# Task: <short description>
-## Request
-<faithful summary>
-## Key context
-<constraints, patterns, integration points>
-## Waves
-### Wave 1: <goal>
-| Sub-task | Agent | Details | Artifact |
-| --- | --- | --- | --- |
-## Files to create or change
-<absolute paths>
-## Tests
-<the tests to write or change, and the commands that run them>
-## Exit criteria
-<what must be true at the end, stated as properties, not as counts>
-## Risks and assumptions
-<material ones only>
-```
-`questions.md`: exactly `NO_QUESTIONS`, or one block per question in this format:
-```markdown
-## Q1: <the question, in one sentence>
-Recommended: <your recommended answer>
-Depends on: <the fact that the safe answer depends on>
-Why: <short context, optional>
-```
-The plan-review page shows each block as a card, so keep the format exact.
+Write `task.md` and `questions.md` in the plan format of the contract.
 </Output>
 
 <Rules>

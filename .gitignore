@@ -1,4 +1,5 @@
 # The installer agent config is generated with absolute paths of this machine: `effortkit installer` writes it.
 /.kiro/
+/.kiro-home/
 __pycache__/
 *~

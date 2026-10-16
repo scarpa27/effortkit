@@ -14,7 +14,7 @@ import unittest
 from pathlib import Path
 
 from tests.sandbox import GATE, FakeInstance, git_env
-from effortkit import core, gen
+from effortkit import core, gen, skills
 
 SPAN = re.compile(r"`([^`\n]+)`")
 NOT_VERBS = {"a", "an", "the", "no", "not", "and", "or", "it", "one", "only", "every", "this", "that", "glob"}
@@ -28,6 +28,8 @@ NOT_RUN = {
     "git commit": "a template: the agent fills the subject. test_gate checks the commit rule itself",
     "effort approve": "the owner's command. The gate refuses it for every agent, and test_gate checks that",
     "effort gen": "the owner or the home supervisor runs it after a merge into the kit or the instance",
+    "npx playwright install": "a setup step of the web-search MCP server, which the owner runs in the server folder",
+    "npm run build": "a setup step of the web-search MCP server, which the owner runs in the server folder",
 }
 # The roles that run the commands of each kit skill.
 SKILL_ROLES = {"lane-code": ("supervisor",), "lane-review": ("supervisor", "reviewer"), "lane-triage": ("supervisor",),
@@ -131,9 +133,36 @@ class PromptCommands(unittest.TestCase):
                 problems.append(f"{source}: `{raw}`: " + "; ".join(reasons))
         self.assertEqual(problems, [])
 
+    def test_the_commands_of_shipped_skills_run_for_the_roles_that_load_them(self):
+        r = FakeInstance({"mcp": {"researcher": ["@mcp-web-search"]}})
+        try:
+            for name in ("e1", "k1", "o1"):
+                r.approve(name)
+            inst, problems = r.inst, []
+            loaders: dict[str, list[str]] = {}
+            for role in [core.SUPERVISOR, *inst.roles]:
+                for name in skills.for_role(inst, role):
+                    loaders.setdefault(name, []).append(role)
+            for name, folder in skills.kit_skills().items():
+                if name in SKILL_ROLES:
+                    continue  # A lane skill: the supervisor hands each command to a role. The other test covers it.
+                for cmd in spans((folder / "SKILL.md").read_text(encoding="utf-8")):
+                    if skipped(cmd):
+                        continue
+                    for role in loaders.get(name, []):
+                        cwd = r.root if role == core.SUPERVISOR else r.tree("e1")
+                        code, err = r.gate(role, "shell", {"command": cmd}, cwd=cwd)
+                        if code:
+                            problems.append(f"skill {name}: `{cmd}` for {role}: {err.splitlines()[1]}")
+            self.assertEqual(problems, [])
+        finally:
+            r.cleanup()
+
     def test_the_skip_table_holds_no_stale_entry(self):
         cmds = [c for _, _, c in self.rows()]
         cmds += spans(installer_part((core.KIT / "agents/installer.md").read_text(encoding="utf-8")))
+        for folder in skills.kit_skills().values():
+            cmds += spans((folder / "SKILL.md").read_text(encoding="utf-8"))
         stale = [p for p in NOT_RUN if not any(c.startswith(p) for c in cmds)]
         self.assertEqual(stale, [])
 

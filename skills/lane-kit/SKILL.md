@@ -18,6 +18,13 @@ description: "Lane rules for an effort of kind kit: a change to the effortkit ma
 - Improvement round: improver (triage, plan), owner approval, developer, tester, reviewer.
 - Direct change: explorer, planner, owner approval, developer, tester, reviewer.
 
+## Skills
+
+- The kit ships every skill that a role of the kit loads, in `skills/<name>/`. `effort gen` copies them into each instance.
+- A new or changed skill from another source needs its entry in `skills/skills-lock.json`: the source, the version, the licence and the files.
+  Then record its hash in the tree: `python3 bin/effortkit skills lock --kit <tree>`.
+- A skill that one project needs belongs in that project's overlay, not in the kit.
+
 ## Tests
 
 - The kit tests run in the tree: `python3 -m unittest discover -s tests -t .`

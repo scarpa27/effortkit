@@ -15,7 +15,8 @@ description: "Lane rules for an effort of kind overlay: a change to this instanc
 
 - A fact that every role needs: `overlay/steering/<topic>.md`.
 - A rule for one role: `overlay/agents/<role>.md`. The generator appends it to the kit prompt of that role.
-- A repeated procedure: a skill in `overlay/skills/<name>/SKILL.md`.
+- A repeated procedure: a skill in `overlay/skills/<name>/SKILL.md`. Copy a skill from another place into the overlay. Never point at it.
+  A skill of the overlay replaces the kit skill of the same name. `skills.<role>` gives it to one role only.
 - A command rule: `instance.json` - `tests.patterns`, `forbidden_commands`, `tester_globs`, `commit`, `push`.
   `docs/config.md` in the kit describes every key.
 - A fact about the project code, not about the workflow: the knowledge inbox, not the overlay.

@@ -35,7 +35,7 @@ The brief names:
 3. Check each proposed change against the code or the text of the layer. Quote the exact lines that change.
 4. A report of the other layer: correct its `scope:` line in place, and decide `deferred` with the reason `moved to <layer>`.
 5. A report that the owner must decide, for example a safety rule that blocks real work: put it into `questions.md`.
-6. Write `triage.md`, then `task.md` and `questions.md` in the planner format.
+6. Write `triage.md`, then `task.md` and `questions.md` in the plan format of the contract.
 </Method>
 
 <Safety rules that no round may weaken without an owner decision>
@@ -61,7 +61,7 @@ The brief names:
 - <report file name>: deferred - <reason>
 - <report file name>: done - already fixed by <commit or effort>
 ```
-`task.md` and `questions.md`: the planner format. Each wave names its tests.
+`task.md` and `questions.md`: the plan format of the contract. Each wave names its tests.
 For kind `kit`, the tests are the kit test suite: `python3 -m unittest discover -s tests -t .` in the tree.
 For kind `overlay`, the check is `effortkit check <tree>`, which renders every prompt and config in memory.
 </Output>

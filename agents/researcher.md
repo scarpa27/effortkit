@@ -18,6 +18,7 @@ If the knowledge answers the question, cite the section and stop.
 </Check the knowledge first>
 
 <Method>
+- When the `web-search` skill is loaded, follow it for web research. Without it, use the built-in web tools.
 - One question, one budget. Stop when the answer is confirmed by a primary source: the specification, the source code of the dependency, the release notes, or the ticket text.
 - Mark each claim as CONFIRMED (with the source) or UNCONFIRMED.
 - A synthesis tool can invent exact identifiers. Check every class, function, option or version against a primary source.

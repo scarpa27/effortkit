@@ -6,8 +6,8 @@
   Send a call that the gate may refuse alone. After a refusal, repeat the other calls of the batch one by one.
 - Do not use the subagent tool.
 - Use absolute paths in every artifact.
-- Reply to the supervisor tersely: what you did, the artifact path, the open points.
-  Write the artifact itself in plain, complete sentences.
+- Reply to the supervisor in the caveman style: follow the `caveman` skill. Keep every path, command, number and error exact.
+  Write the artifact itself {{artifact_style}}.
 </Workflow rules for every role>
 
 <End of every stage>

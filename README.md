@@ -50,6 +50,17 @@ ln -s ~/efforts/<name>/bin/effort ~/.local/bin/<name>-effort
 
 Inside the chats, `effort` is the command of the instance, because the session puts the instance's `bin/` first on PATH.
 
+## Skills
+
+- The kit ships every skill that its agents load: its own lane and plan-review skills, and the standard skills lavish, grill-me with grilling, caveman with ultracave and megacave, asd-ste100 and web-search.
+- `effort gen` copies the skills of each role into the workspace of the instance, `.kiro/skills/`, and the agent configs name only those copies.
+  So an instance works the same on every machine, and a change in `~/.kiro/skills` does not reach it.
+- Every session runs with `KIRO_HOME=<instance>/.kiro-home`, which links only the kiro settings and the MCP servers of the machine.
+  kiro-cli would otherwise add every skill of `~/.kiro/skills` and every file of `~/.kiro/steering` to every agent.
+  A personal steering file that a project needs goes into `overlay/steering/` as a copy.
+- A project skill goes into `overlay/skills/<name>/` as a copy. It replaces a kit skill of the same name.
+- `effortkit skills` lists the shipped skills with their sources and licences. `skills/skills-lock.json` records them.
+
 ## The improvement loop
 
 - Every stage ends with the duty to write a workflow report for each problem that the workflow caused: a misleading prompt, a refused command that the task needed, a missing tool, a missing fact.
@@ -72,7 +83,7 @@ effortkit/                       the kit, repository 1
   lib/effortkit/                 core, gate, cli, gen, improve, install, plan review, shell parser
   agents/*.md                    role prompt templates with {{placeholders}}
   steering/workflow-contract.md  the contract template
-  skills/                        lane skills and plan review
+  skills/                        lane skills, plan review and the standard skills, with skills-lock.json
   hooks/                         commit-msg and pre-push templates
   docs/config.md                 every key of instance.json
   tests/                         the kit tests
@@ -83,8 +94,8 @@ effortkit/                       the kit, repository 1
   worklog/                       repository 3: plan/, knowledge/, improvements/, reference/
   product.git/                   bare clone of the project (or repo.path names your clone)
   trees/<effort>/                one worktree per effort
-  .kiro/                         generated agent configs, prompts, steering and settings
-  bin/effort                     generated wrapper
+  .kiro/                         generated agent configs, prompts, steering, settings and the skill copies
+  bin/effort, bin/effortkit      generated wrappers
   locks/                         sessions, the home gate log, the worklog lock
 ```
 
@@ -104,6 +115,7 @@ effortkit/                       the kit, repository 1
 | `effort plan-review <name> [decision.md]` | A review page of the plan or of the open decisions. |
 | `effort preflight <name> [--fix]`, `effort gen [--check]` | Checks, hooks and generated configs. |
 | `effortkit instances`, `effortkit reports --scope kit` | Every registered instance, and the open kit reports across them. |
+| `effortkit skills [lock]` | The shipped skills, their sources and licences. `lock` records the hashes after a change. |
 
 ## Safety
 

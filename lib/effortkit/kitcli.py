@@ -8,6 +8,7 @@
   effortkit instances                the registered instances, with their open efforts and reports
   effortkit reports [--scope kit]    the open workflow reports of every registered instance
   effortkit mcp-servers              the MCP server names for mcp.<role>, without their settings, which hold tokens
+  effortkit skills [lock [--kit DIR]] the skills that the kit ships, their sources and licences; lock records the hashes
   effortkit selftest                 run the kit tests
 """
 from __future__ import annotations
@@ -19,7 +20,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import core, gen, improve, install
+from . import core, gen, improve, install, skills
 
 
 def die(msg: str, code: int = 2) -> None:
@@ -72,6 +73,8 @@ def cmd_installer(a) -> None:
     if target:
         env["EFFORTKIT_INSTALL_TARGET"] = str(target)
     env["PATH"] = f"{core.KIT / 'bin'}{os.pathsep}{env.get('PATH', '')}"
+    env["EFFORTKIT_MACHINE_KIRO_HOME"] = str(gen.machine_kiro_home())
+    env["KIRO_HOME"] = str(core.KIT / gen.KIRO_HOME_DIR)
     os.chdir(core.KIT)
     first = (f"Set up effortkit for a new project. The instance goes into {target}." if target
              else "Set up effortkit for a new project. Ask me where the instance must live.")
@@ -137,6 +140,33 @@ def cmd_mcp_servers(a) -> None:
     print("\n".join(f"@{n}" for n in names) if names else "no MCP servers are configured")
 
 
+def cmd_skills(a) -> None:
+    kit = core.real(Path(a.kit).expanduser()) if a.kit else core.KIT
+    if a.action == "lock":
+        changed = skills.relock(kit)
+        print(f"recorded new hashes for: {', '.join(changed)}" if changed else "every hash was current")
+        return
+    if a.action:
+        die(f"unknown skills action '{a.action}'. Use `effortkit skills` or `effortkit skills lock`.")
+    entries = skills.lock(kit)
+    users = {}
+    for role, names in skills.ROLE_SKILLS.items():
+        for n in names:
+            users.setdefault(n, []).append(role)
+    for n, roles in users.items():
+        if len(roles) == len(skills.ROLE_SKILLS):
+            users[n] = ["every role"]
+    print(f"{'skill':16} {'licence':12} {'roles':38} source")
+    for name in skills.kit_skills(kit):
+        e = entries.get(name, {})
+        roles = ", ".join(users.get(name, [])) or ("supervisor (lane)" if name.startswith("lane-") else
+                                                   "with its parent skill" if any(name in v for v in skills.COMPANIONS.values()) else "-")
+        ref = e.get("ref") or (e.get("commit") or "")[:12]
+        print(f"{name:16} {e.get('license', 'the kit') [:12]:12} {roles[:38]:38} {e.get('source', '?')} {ref}".rstrip())
+    for p in skills.problems(kit=kit):
+        print(f"FAIL {p}")
+
+
 def cmd_selftest(a) -> None:
     sys.exit(subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-t", "."], cwd=core.KIT).returncode)
 
@@ -153,6 +183,8 @@ def main(argv: list[str]) -> None:
     p = sp.add_parser("instances"); p.set_defaults(fn=cmd_instances)
     p = sp.add_parser("reports"); p.add_argument("--scope", choices=improve.SCOPES); p.set_defaults(fn=cmd_reports)
     p = sp.add_parser("mcp-servers"); p.set_defaults(fn=cmd_mcp_servers)
+    p = sp.add_parser("skills"); p.add_argument("action", nargs="?", default=""); p.add_argument("--kit")
+    p.set_defaults(fn=cmd_skills)
     p = sp.add_parser("selftest"); p.set_defaults(fn=cmd_selftest)
     p = sp.add_parser("help"); p.set_defaults(fn=lambda a: ap.print_help())
     args = ap.parse_args(argv or ["help"])

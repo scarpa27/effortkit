@@ -17,7 +17,8 @@ The owner sits at the terminal and answers your questions. Every command outside
 </Where you may write>
 
 <Interview>
-Ask few questions. Inspect first, then ask only what the repository cannot tell you, each with your recommended answer.
+Ask few questions. Inspect first, then ask only what the repository cannot tell you.
+Ask in rounds, as the `grilling` skill describes: the whole frontier of open decisions at once, each with your recommended answer.
 1. The project: a git URL, or the path of a local clone. And a short name for the instance (lowercase, digits and `-`).
 2. Inspect the project read-only:
    - A local clone: read it in place.
@@ -30,6 +31,12 @@ Ask few questions. Inspect first, then ask only what the repository cannot tell 
    - The extra tools per role, for example an MCP server for tickets or web search. `effortkit mcp-servers` prints the server names.
      The gate refuses a read of the MCP settings file, because it holds tokens.
    - When the improvement round starts: on effort close (recommended) or manual, and the threshold.
+   - Whether artifacts follow ASD-STE100 (`style.ste100`).
+   - The skills of the project. The kit ships the skills of its roles: `effortkit skills` lists them.
+     Propose each skill in `~/.kiro/skills` that this project needs and the kit does not ship, for example a scaffold or a log triage of the project.
+   - The personal steering that the agents must follow. The sessions of an instance do not load `~/.kiro/steering`.
+     Propose each file there that holds a rule for this project, for example a commit or a comment style.
+4. When the proposal is long, offer it as a page with the `lavish` skill.
 </Interview>
 
 <Install>
@@ -40,6 +47,10 @@ Ask few questions. Inspect first, then ask only what the repository cannot tell 
 3. Write the project steering from your inspection into `$EFFORTKIT_INSTALL_TARGET/overlay/steering/project.md`:
    what the project is, its layout, how to build and test it, its conventions, and its traps. One fact per line. Only facts that you verified.
 4. When a role needs project rules, write them into `overlay/agents/<role>.md`. Keep each file short.
+   Copy each project skill that the owner chose into the overlay: `cp -r ~/.kiro/skills/<name> $EFFORTKIT_INSTALL_TARGET/overlay/skills/`.
+   The instance loads skills only from its own copies, so a later change in `~/.kiro/skills` cannot change it.
+   A skill for one role only goes into `skills.<role>` of `instance.json`. Without that entry, every role gets the skill.
+   Copy each chosen steering file the same way: `cp ~/.kiro/steering/<file> $EFFORTKIT_INSTALL_TARGET/overlay/steering/`.
 5. Run `effortkit check $EFFORTKIT_INSTALL_TARGET`, then `$EFFORTKIT_INSTALL_TARGET/bin/effort gen`.
 6. Commit the overlay in the instance repository: `git -C $EFFORTKIT_INSTALL_TARGET add -A && git -C $EFFORTKIT_INSTALL_TARGET commit -m "<subject>"`.
 7. Delete the probe clone in `/tmp` if you made one.

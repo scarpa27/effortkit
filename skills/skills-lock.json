@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "skills": {
+    "plan-review": {
+      "source": "effortkit"
+    },
+    "lane-code": {
+      "source": "effortkit"
+    },
+    "lane-review": {
+      "source": "effortkit"
+    },
+    "lane-triage": {
+      "source": "effortkit"
+    },
+    "lane-kit": {
+      "source": "effortkit"
+    },
+    "lane-overlay": {
+      "source": "effortkit"
+    },
+    "lavish": {
+      "source": "https://github.com/kunchenguid/lavish-axi",
+      "ref": "v0.1.88",
+      "path": "skills/lavish",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Kun Chen",
+      "files": "SKILL.md of the release, LICENSE of the repository root",
+      "note": "The skill runs `npx -y lavish-axi`, so it needs Node with npx and the npm registry.",
+      "sha256": "4a96416e5cd7f86ed903df974f48d40d825878feb975351579d17ef5468911ea"
+    },
+    "caveman": {
+      "source": "https://github.com/JuliusBrussee/caveman",
+      "ref": "v4.0.1",
+      "commit": "d262ab3882952a59312ff3537cd86d894523c5ab",
+      "path": "skills/caveman",
+      "license": "Apache-2.0",
+      "copyright": "Copyright 2026 Julius Brussee",
+      "files": "SKILL.md and README.md of the skill, LICENSE and NOTICE of the repository root",
+      "note": "The SKILL.md of release v4.0.1.",
+      "sha256": "b813db9965c4322237b8e3d36eb5adca289faa6b6f724dc958538c3218aa78db"
+    },
+    "ultracave": {
+      "source": "https://github.com/JuliusBrussee/caveman",
+      "ref": "v4.0.1",
+      "commit": "d262ab3882952a59312ff3537cd86d894523c5ab",
+      "path": "skills/ultracave",
+      "license": "Apache-2.0",
+      "copyright": "Copyright 2026 Julius Brussee",
+      "files": "SKILL.md and README.md of the skill, LICENSE and NOTICE of the repository root",
+      "note": "caveman names it as the target of /caveman ultra.",
+      "sha256": "c97a54fce9f937360e4bb1ea2552cee42ed91d9586b15e0f1d5ed136530f95c1"
+    },
+    "megacave": {
+      "source": "https://github.com/JuliusBrussee/caveman",
+      "ref": "v4.0.1",
+      "commit": "d262ab3882952a59312ff3537cd86d894523c5ab",
+      "path": "skills/megacave",
+      "license": "Apache-2.0",
+      "copyright": "Copyright 2026 Julius Brussee",
+      "files": "SKILL.md and README.md of the skill, LICENSE and NOTICE of the repository root",
+      "note": "caveman names it as the target of /caveman wenyan.",
+      "sha256": "d2b7ab760cc658f910f308e6d9265bac99b61089acd163f2f5e77a47319783ae"
+    },
+    "asd-ste100": {
+      "source": "https://github.com/danyuchn/asd-ste100-skill",
+      "commit": "d5ce157870cf9c41efd1d6e836706a2be3c7b9da",
+      "path": ".",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Dustin Yuchen Teng",
+      "files": "every file of the commit",
+      "note": "The commit that matches the copy in ~/.kiro/skills on 2026-10-23. Upstream has newer commits.",
+      "sha256": "d4e7fc0e6909b8e1aff930304d84ce422097dfa4d20f697ad6e683d9de1a52bd"
+    },
+    "grilling": {
+      "source": "https://github.com/mattpocock/skills",
+      "commit": "5beb35b040e3de97e54fa9e386d7e42d15c295c2",
+      "path": "skills/productivity/grilling",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Matt Pocock",
+      "files": "SKILL.md of the skill, LICENSE of the repository root",
+      "sha256": "58c0253adb8775c6b7cf8df0328c890642191d0e62bae1f43a274269cdbc0e40"
+    },
+    "grill-me": {
+      "source": "https://github.com/mattpocock/skills",
+      "commit": "5beb35b040e3de97e54fa9e386d7e42d15c295c2",
+      "path": "skills/productivity/grill-me",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Matt Pocock",
+      "files": "SKILL.md of the skill, LICENSE of the repository root",
+      "modified": "The last line names the grilling skill. Upstream calls a Skill tool, which kiro-cli does not have.",
+      "sha256": "b7f8a9c5eb66b16007b90903bfb6e5603c22ee65c63b493f2856b37d46dc0411"
+    },
+    "web-search": {
+      "source": "local: ~/.kiro/skills/web-search of the owner, copied on 2026-10-23",
+      "license": "unknown: the owner's skill. Confirm it before the kit is published.",
+      "requires_tools": [
+        "@mcp-web-search"
+      ],
+      "note": "It describes the tools of the mcp-web-search server, so only a role with that server loads it.",
+      "sha256": "5c1dee6a5943ed097c1d593ddcc73366ddf43593af02b04bf40286ccae9dab8c"
+    }
+  }
+}

@@ -476,7 +476,7 @@ def forbid(words: list[str], ctx: core.Context, role: str, cwd: Path) -> None:
                 raise Refusal("commands", f"rm -r is allowed only on build folders ({', '.join(sorted(build_dirs))}) or /tmp. Refused: {p}")
     if verb == "find":
         start = next((a for a in args if not a.startswith("-")), ".")
-        if start in ("/", "~", "/repo", "/home", "/proc") and "-maxdepth" not in args:
+        if start in ("/", "~", "/home", "/Users", "/proc", str(core.HOME)) and "-maxdepth" not in args:
             raise Refusal("commands", f"find {start} without -maxdepth can run for hours. Name a smaller folder or add -maxdepth.")
     if verb == "effort" or (verb.startswith("python") and args and args[0].endswith("/effort")):
         eargs = args[1:] if verb != "effort" else args
@@ -785,10 +785,17 @@ def analyze(words: list[str], out: list[str], cwd: Path) -> dict:
         sub = plain[0] if plain else "status"
         r["opaque"] = sub not in EFFORT_READ and not (sub == "improve" and plain[1:2] == ["stats"])
     elif verb == "effortkit":
-        # check renders the config in memory, and the others list. install and installer change things.
-        r["opaque"] = (plain[0] if plain else "help") not in ("check", "instances", "reports", "mcp-servers", "help")
+        sub = plain[0] if plain else "help"
+        if sub == "skills" and plain[1:2] == ["lock"]:
+            # It rewrites the lock of a kit: the one of --kit, else the one that holds the script. On PATH that is
+            # the live kit, through the wrapper of the instance, and the zone rules refuse it there.
+            kit_dir = value_after(a, "--kit") or (str(core.resolve(w[0], cwd).parents[1]) if "/" in w[0] else str(core.KIT))
+            r["targets"].append(target(f"{kit_dir}/skills/skills-lock.json", cwd))
+        else:
+            # check renders the config in memory, and the others list. install and installer change things.
+            r["opaque"] = sub not in ("check", "instances", "reports", "mcp-servers", "skills", "help")
     elif verb == "kiro-cli":
-        r["opaque"] = plain[:1] not in (["agent"], ["settings"]) and not any(x in ("--version", "--help") for x in a)
+        r["opaque"] = plain[:1] not in (["agent"], ["settings"]) and not any(x in ("--version", "--help", "--list-models") for x in a)
     elif verb not in READ_VERBS:
         r["opaque"] = True
     return r
@@ -1043,7 +1050,7 @@ def context() -> None:
         else:
             out.append("Mode: home supervisor. You serve all efforts. Send tree work with `effort run`, never with the subagent tool.")
         if os.environ.get("EFFORTKIT_TERSE"):
-            out.append("Style: the owner asked for terse replies in this session.")
+            out.append("Style: the owner asked for terse replies in this session. Follow the `caveman` skill.")
         seen_file = INST.locks / f"context-{payload.get('session_id', 'none')}.json"
         last = (core.read_json(seen_file) or {}).get("last", 0)
         efforts = INST.efforts()

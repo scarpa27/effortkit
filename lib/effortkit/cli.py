@@ -256,6 +256,9 @@ def session_env(e: core.Effort | None, terse: bool) -> dict:
     if terse:
         env["EFFORTKIT_TERSE"] = "1"
     env["LAVISH_AXI_TELEMETRY"] = "0"
+    # The skills and the steering of the machine stay out of the sessions. gen.KIRO_HOME_DIR says why.
+    env["EFFORTKIT_MACHINE_KIRO_HOME"] = str(gen.machine_kiro_home())
+    env["KIRO_HOME"] = str(gen.ensure_kiro_home(INST.root / gen.KIRO_HOME_DIR))
     # The agents and the owner's ! shell call `effort` by name, so this instance's command comes first on PATH.
     env["PATH"] = f"{INST.bin}{os.pathsep}{env.get('PATH', '')}"
     host = INST.config["forge"].get("host")

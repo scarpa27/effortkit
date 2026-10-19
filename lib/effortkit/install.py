@@ -71,12 +71,9 @@ def check_config(root: Path, render: bool = True) -> list[str]:
                 errors.append(f"{where} is empty")
         except re.error as exc:
             errors.append(f"{where} is not a valid regex: {exc}")
-    patterns = [p for p in cfg["tests"].get("patterns") or [] if _compiles(p)]
     for cmd in cfg["tests"].get("commands") or []:
-        example = placeholder_example(cmd)
-        if not any(re.fullmatch(p, example) for p in patterns):
-            # The prompts name this command, so a role that may run tests would be refused on it.
-            errors.append(f"tests.commands names {cmd!r}, and no tests.patterns entry matches {example!r}")
+        if not cmd.split() or not re.fullmatch(core.command_pattern(cmd), placeholder_example(cmd)):
+            errors.append(f"tests.commands entry {cmd!r} is not a command")
     for i, r in enumerate(cfg.get("forbidden_commands") or []):
         if not r.get("reason"):
             errors.append(f"forbidden_commands[{i}] needs a reason, so a refusal can explain itself")
@@ -111,14 +108,6 @@ def check_config(root: Path, render: bool = True) -> list[str]:
         except gen.GenError as exc:
             errors.append(str(exc))
     return errors
-
-
-def _compiles(p: str) -> bool:
-    try:
-        re.compile(p)
-        return True
-    except re.error:
-        return False
 
 
 def validate_with_kiro(inst: core.Instance) -> list[str]:

@@ -107,7 +107,7 @@ class CheckConfig(unittest.TestCase):
     def test_each_problem_is_named(self):
         cases = [
             ({"commit": {"subject_regex": "(unclosed"}}, "commit.subject_regex is not a valid regex"),
-            ({"tests": {"commands": ["npm test"], "patterns": ["make test"]}}, "no tests.patterns entry matches 'npm test'"),
+            ({"tests": {"commands": ["make test"], "patterns": ["(unclosed"]}}, "tests.patterns[0] is not a valid regex"),
             ({"roles": {"auditor": {"profile": "reader"}}}, "needs its prompt in overlay/agents/auditor.md"),
             ({"roles": {"explorer": {"profile": "root"}}}, "profile 'root' must be one of"),
             ({"kinds": {"docs": {"repo": "product", "lane": "lane-docs"}}}, "lane skill lane-docs is in neither"),
@@ -126,9 +126,8 @@ class CheckConfig(unittest.TestCase):
         errors = self.check()
         self.assertTrue(any("unknown placeholder {{no_such_thing}}" in e for e in errors), errors)
 
-    def test_a_documented_test_command_with_a_placeholder_matches_its_pattern(self):
-        self.assertEqual(self.check(tests={"commands": ["mvn -pl <module> -am test"],
-                                           "patterns": [r"mvn(?: -pl \S+| -am| -q)* test(?: -D\S+)*"]}), [])
+    def test_a_test_command_needs_no_pattern(self):
+        self.assertEqual(self.check(tests={"commands": ["mvn -pl <module> -am test"]}), [])
 
 
 class McpServers(unittest.TestCase):

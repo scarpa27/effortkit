@@ -680,7 +680,7 @@ def is_test_command(words: list[str]) -> bool:
     if INST is None or not words:
         return False
     line = " ".join(words)
-    return any(re.fullmatch(p, line) for p in INST.config["tests"].get("patterns") or [])
+    return any(re.fullmatch(p, line) for p in core.test_patterns(INST.config))
 
 
 def analyze(words: list[str], out: list[str], cwd: Path) -> dict:

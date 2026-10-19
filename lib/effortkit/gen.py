@@ -121,7 +121,7 @@ def shell_settings(inst: core.Instance, role: str, web: bool) -> dict:
     if web:
         families.append(al.RESEARCH)
     if (inst.profile(role) or {}).get("shell") == "read+tests":
-        families.append([al.segment(p) for p in inst.config["tests"].get("patterns") or []])
+        families.append([al.segment(p) for p in core.test_patterns(inst.config)])
     return {"allowedCommands": al.allowlist(*[f for f in families if f]), "denyByDefault": True}
 
 

@@ -31,7 +31,7 @@ CONFIG = {
     "ticket": {"regex": r"^TOY-\d+$", "example": "TOY-12"},
     "commit": {"subject_regex": r"^(?:TOY-\d+: |\[nojira\] )\S", "subject_help": "TOY-NNN: <subject>",
                "forbid_coauthor": True, "forbid_dashes": True},
-    "tests": {"commands": ["python3 -m pytest <path>", "make test"], "patterns": [r"python3 -m pytest(?: \S+)*", r"make test"]},
+    "tests": {"commands": ["python3 -m pytest <path>", "make test"]},
     "forbidden_commands": [{"pattern": r"^make deploy\b", "reason": "make deploy publishes the package.",
                             "fix": "The owner deploys."}],
 }

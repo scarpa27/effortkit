@@ -80,7 +80,8 @@ DEFAULTS: dict = {
     "commit": {"subject_regex": r"^\S", "subject_help": "<a short subject>", "forbid_coauthor": True,
                "forbid_dashes": False},
     "push": {"protected_branches": ["main", "master"], "max_tags": 2},
-    # commands: examples for the prompts. patterns: full-match regexes over the words of one command.
+    # commands: the test commands as the prompts show them. The kit derives their rules (command_pattern).
+    # patterns: full-match regexes over the words of one command, for a form that a command cannot express.
     "tests": {"commands": [], "patterns": []},
     "tester_globs": ["**/test/**", "**/tests/**", "**/src/test/**", "**/__tests__/**", "**/test_*.py",
                      "**/*_test.py", "**/*_test.go", "**/*.test.*", "**/*.spec.*", "test/**", "tests/**"],
@@ -200,6 +201,33 @@ def merge(base: dict, over: dict) -> dict:
         else:
             out[k] = copy.deepcopy(v)
     return out
+
+
+PLACEHOLDER = re.compile(r"<[^<>\s]+>")
+# Extra flags may go anywhere, so `-q` or `-Dtest=X` needs no new rule. A word without a dash may not, because
+# `mvn test install` must not pass as `mvn test`.
+FLAGS = r"(?: -\S+)*"
+
+
+def regex_escape(text: str) -> str:
+    """Escape only the meta characters that Python and the Rust engine of kiro-cli both accept escaped."""
+    return re.sub(r"([\\.+*?()|\[\]{}^$])", r"\\\1", text)
+
+
+def command_pattern(cmd: str) -> str:
+    """The full-match rule of a documented command. A <placeholder> stands for one word."""
+    words = []
+    for word in cmd.split():
+        parts = re.split(r"(<[^<>\s]+>)", word)
+        words.append("".join(r"\S+" if PLACEHOLDER.fullmatch(p) else regex_escape(p) for p in parts if p))
+    return words[0] + "".join(f"{FLAGS} {w}" for w in words[1:]) + FLAGS
+
+
+def test_patterns(config: dict) -> list[str]:
+    """The rules of every test command: derived from tests.commands, then the explicit tests.patterns."""
+    tests = config.get("tests") or {}
+    derived = [command_pattern(c) for c in tests.get("commands") or [] if c.split()]
+    return derived + [p for p in tests.get("patterns") or [] if p not in derived]
 
 
 def config_home() -> Path:

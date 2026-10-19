@@ -26,8 +26,8 @@ Every key except `effortkit`, `name` and `repo` has a default, so an answers fil
 | `commit.forbid_dashes` | `false` | Refuse an em dash or an en dash in a commit message. |
 | `push.protected_branches` | `["main", "master"]` | The pre-push hook refuses a push to these branches. Agents never push at all. |
 | `push.max_tags` | `2` | The pre-push hook refuses a push with more tags. |
-| `tests.commands` | `[]` | The test commands, as the prompts show them. `<placeholder>` parts are allowed. |
-| `tests.patterns` | `[]` | Full-match regexes over the words of one command, joined by single spaces. A matching command needs no approval, and the reviewer and the debugger may run it. Every entry of `tests.commands` must match one pattern, with each placeholder read as `x`. |
+| `tests.commands` | `[]` | The test commands, as you run them, for example `mvn -pl <module> -am test`. A `<placeholder>` stands for one word, and more flags (words that start with `-`) may go anywhere. A matching command needs no approval, and the reviewer and the debugger may run it. |
+| `tests.patterns` | `[]` | Advanced: full-match regexes over the words of one command, joined by single spaces, for a form that `tests.commands` cannot express. |
 | `tester_globs` | common test folders | The files that the tester may change, as globs relative to the tree root. |
 | `forbidden_commands` | `[]` | `{"pattern", "reason", "fix"}` entries. The gate refuses a command whose words match `pattern` for every role, also after the approval. |
 | `build_dirs` | build output names | Folder names where `rm -r` is allowed. |
@@ -103,10 +103,7 @@ An unknown placeholder is an error of `effort gen` and of `effortkit check`.
   "repo": {"url": "git@gitlab.example.com:team/shop.git"},
   "ticket": {"regex": "^SHOP-\\d+$", "example": "SHOP-120"},
   "commit": {"subject_regex": "^(?:SHOP-\\d+: |\\[nojira\\] )\\S", "subject_help": "SHOP-NNN: <subject>"},
-  "tests": {
-    "commands": ["python3 -m pytest <path>", "npm test -- <path>"],
-    "patterns": ["python3 -m pytest(?: \\S+)*", "npm test(?: -- \\S+)?"]
-  },
+  "tests": {"commands": ["python3 -m pytest <path>", "npm test -- <path>"]},
   "forbidden_commands": [
     {"pattern": "^(?:make|npm run) deploy\\b", "reason": "deploy publishes to production.", "fix": "The owner deploys."}
   ],

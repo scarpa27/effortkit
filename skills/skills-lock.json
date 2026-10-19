@@ -92,13 +92,29 @@
       "sha256": "b7f8a9c5eb66b16007b90903bfb6e5603c22ee65c63b493f2856b37d46dc0411"
     },
     "web-search": {
-      "source": "local: ~/.kiro/skills/web-search of the owner, copied on 2026-10-23",
-      "license": "unknown: the owner's skill. Confirm it before the kit is published.",
+      "source": "owner",
+      "origin": "~/.kiro/skills/web-search, copied on 2026-10-23",
+      "license": "the owner's own skill. The owner allowed it in the kit on 2026-10-26.",
       "requires_tools": [
         "@mcp-web-search"
       ],
       "note": "It describes the tools of the mcp-web-search server, so only a role with that server loads it.",
       "sha256": "5c1dee6a5943ed097c1d593ddcc73366ddf43593af02b04bf40286ccae9dab8c"
+    },
+    "diagnostic-experiment-matrix": {
+      "source": "owner",
+      "origin": "~/.kiro/skills/diagnostic-experiment-matrix, copied on 2026-10-26",
+      "license": "the owner's own skill. The owner allowed it in the kit on 2026-10-26.",
+      "modified": "Step 4 names info-level logging and soft assertions instead of a project-specific verdict level.",
+      "sha256": "ec42fb7b251c73b5ee2743aaf1a7d14704324410e0141cdd349656b38d4def9f"
+    },
+    "engineering-writeup": {
+      "source": "owner",
+      "origin": "~/.kiro/skills/engineering-writeup, copied on 2026-10-26",
+      "license": "the owner's own skill. The owner allowed it in the kit on 2026-10-26.",
+      "files": "SKILL.md and references/. The evals/ folder of the skill-creator runs stays out.",
+      "modified": "The worked examples use a neutral export service instead of a project-specific example, and Step 2 names the plan folder of an effort. The structure and the rules are unchanged.",
+      "sha256": "430d6c17fd53bff004e630e790ce86005ce7a1694bff54610318ac7f760938aa"
     }
   }
 }

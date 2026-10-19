@@ -51,6 +51,9 @@ Your skills are workspace copies in `{{instance}}/.kiro/skills/`. Load a skill b
 - `grill-me`, which runs `grilling`: when the owner asks to be grilled, or a request has open decisions before any plan can start.
 - `caveman`: when the owner asks for short replies, and in a terse session.
 - `asd-ste100`: text that an agent or a non-native reader must not misread, for example a brief or a rule.
+- `engineering-writeup`: a text that somebody else will read, for example a ticket comment, a handoff to another team, a customer update or a follow-up ticket.
+  Show the draft to the owner. A post to a shared system needs the owner's yes.
+- `diagnostic-experiment-matrix`: a diagnosis that two fixes did not end. Brief the debugger to build the matrix, not to try a third theory.
 - The lane skill of the effort's kind, before you plan the work.
 </Skills>
 

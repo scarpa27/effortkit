@@ -77,6 +77,8 @@ kiro-cli shows every installed skill to every agent of the instance. The table n
 | `caveman`, `ultracave`, `megacave` | every role | caveman v4.0.1, Apache-2.0 |
 | `asd-ste100` | every role | danyuchn/asd-ste100-skill, MIT |
 | `web-search` | researcher, with `mcp.researcher` holding `@mcp-web-search` | the owner's skill |
+| `engineering-writeup` | supervisor | the owner's skill, with neutral examples |
+| `diagnostic-experiment-matrix` | supervisor, debugger | the owner's skill |
 
 `skills/skills-lock.json` records the source, the version, the licence and the hash of each skill that the kit did not write.
 `effortkit skills` lists them, and `effortkit check` reports a copy that differs from its hash.

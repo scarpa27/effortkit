@@ -17,14 +17,15 @@ LOCK_NAME = "skills-lock.json"
 # The skills of the built-in roles. Every role also gets the overlay skills of its instance, and the supervisor gets
 # the lane skill of every kind.
 ROLE_SKILLS = {
-    core.SUPERVISOR: ["plan-review", "lavish", "grill-me", "caveman", "asd-ste100"],
+    core.SUPERVISOR: ["plan-review", "lavish", "grill-me", "caveman", "asd-ste100", "engineering-writeup",
+                      "diagnostic-experiment-matrix"],
     "explorer": ["caveman", "asd-ste100"],
     "researcher": ["caveman", "asd-ste100", "web-search"],
     "planner": ["caveman", "asd-ste100"],
     "developer": ["caveman", "asd-ste100"],
     "tester": ["caveman", "asd-ste100"],
     "reviewer": ["caveman", "asd-ste100"],
-    "debugger": ["caveman", "asd-ste100"],
+    "debugger": ["caveman", "asd-ste100", "diagnostic-experiment-matrix"],
     "improver": ["caveman", "asd-ste100"],
 }
 # A custom role replies to the supervisor like every specialist, so it gets these unless the config says otherwise.

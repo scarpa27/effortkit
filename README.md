@@ -52,7 +52,7 @@ Inside the chats, `effort` is the command of the instance, because the session p
 
 ## Skills
 
-- The kit ships every skill that its agents load: its own lane and plan-review skills, and the standard skills lavish, grill-me with grilling, caveman with ultracave and megacave, asd-ste100 and web-search.
+- The kit ships every skill that its agents load: its own lane and plan-review skills, and the standard skills lavish, grill-me with grilling, caveman with ultracave and megacave, asd-ste100, web-search, engineering-writeup and diagnostic-experiment-matrix.
 - `effort gen` copies the skills of each role into the workspace of the instance, `.kiro/skills/`, and the agent configs name only those copies.
   So an instance works the same on every machine, and a change in `~/.kiro/skills` does not reach it.
 - Every session runs with `KIRO_HOME=<instance>/.kiro-home`, which links only the kiro settings and the MCP servers of the machine.

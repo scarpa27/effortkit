@@ -13,6 +13,10 @@ from effortkit import core, gen, install, skills
 
 # The skills that the agents of the workflow load, by name. Each of them must ship with the kit.
 WORKFLOW_SKILLS = {"lavish", "caveman", "asd-ste100", "grill-me", "web-search", "plan-review"}
+# Generic skills of the owner that the kit ships too.
+OWNER_SKILLS = {"diagnostic-experiment-matrix", "engineering-writeup"}
+# Names of the project that the kit came from. The prompts, the steering and the skills must stay free of them.
+ORIGIN_TERMS = r"(?!)"
 
 
 class ShippedSkills(unittest.TestCase):
@@ -21,13 +25,13 @@ class ShippedSkills(unittest.TestCase):
 
     def test_the_skills_of_the_workflow_ship_with_their_companions(self):
         shipped = set(skills.kit_skills())
-        self.assertLessEqual(WORKFLOW_SKILLS, shipped)
+        self.assertLessEqual(WORKFLOW_SKILLS | OWNER_SKILLS, shipped)
         for name, companions in skills.COMPANIONS.items():
             self.assertLessEqual(set(companions), shipped, name)
 
     def test_every_vendored_skill_carries_its_licence(self):
         for name, entry in skills.lock().items():
-            if entry.get("source") == "effortkit" or entry["license"].startswith("unknown"):
+            if entry.get("source") in ("effortkit", "owner"):
                 continue
             self.assertTrue((skills.kit_skills()[name] / "LICENSE").is_file(), name)
 
@@ -42,6 +46,21 @@ class ShippedSkills(unittest.TestCase):
             self.assertEqual(skills.problems(kit=kit), [])
         finally:
             shutil.rmtree(kit, ignore_errors=True)
+
+    def test_the_owner_skills_record_the_permission(self):
+        for name, entry in skills.lock().items():
+            if entry.get("source") == "owner":
+                self.assertIn("The owner allowed it in the kit on", entry["license"], name)
+                self.assertTrue(entry.get("origin"), name)
+
+    def test_no_prompt_steering_or_skill_names_the_origin_project(self):
+        import re
+        for folder in ("agents", "steering", "skills"):
+            for f in (core.KIT / folder).rglob("*"):
+                # The lock records where each skill came from, and no agent loads it.
+                if f.is_file() and f.name != skills.LOCK_NAME:
+                    hits = re.findall(ORIGIN_TERMS, f.read_text(encoding="utf-8", errors="replace"))
+                    self.assertEqual(hits, [], f)
 
     def test_no_shipped_skill_names_a_path_of_this_machine(self):
         home = str(Path.home())
@@ -63,8 +82,10 @@ class Wiring(unittest.TestCase):
         inst = self.r.inst
         sup = skills.for_role(inst, core.SUPERVISOR)
         for name in ("plan-review", "lavish", "grill-me", "grilling", "caveman", "ultracave", "megacave",
+                     "engineering-writeup", "diagnostic-experiment-matrix",
                      "lane-code", "lane-review", "lane-triage", "lane-kit", "lane-overlay"):
             self.assertIn(name, sup)
+        self.assertIn("diagnostic-experiment-matrix", skills.for_role(inst, "debugger"))
         for role in core.BUILTIN_ROLES:
             self.assertIn("caveman", skills.for_role(inst, role), role)
             self.assertNotIn("lavish", skills.for_role(inst, role), role)

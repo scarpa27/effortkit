@@ -35,6 +35,8 @@ HIGH (reproduced or read in the code) | MEDIUM | LOW
 </Output>
 
 <Rules>
+- When the brief says that earlier fixes failed, or the code and the run disagree, follow the `diagnostic-experiment-matrix` skill.
+  Design the experiments in `investigation.md`. A writer stage runs them, because your shell only reads.
 - When the symptom can be a bug in a tool that the project depends on, say so. The supervisor sends `researcher` first.
 - Name an unconfirmed cause as a hypothesis.
 - Do not change source.

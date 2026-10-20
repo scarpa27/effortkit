@@ -786,6 +786,9 @@ def analyze(words: list[str], out: list[str], cwd: Path) -> dict:
         r["opaque"] = sub not in EFFORT_READ and not (sub == "improve" and plain[1:2] == ["stats"])
     elif verb == "effortkit":
         sub = plain[0] if plain else "help"
+        if sub == "init" and value_after(a, "--out"):
+            # It clones the source into a folder of its own in /tmp, and writes the answers to --out.
+            r["targets"].append(target(value_after(a, "--out"), cwd))
         if sub == "skills" and plain[1:2] == ["lock"]:
             # It rewrites the lock of a kit: the one of --kit, else the one that holds the script. On PATH that is
             # the live kit, through the wrapper of the instance, and the zone rules refuse it there.

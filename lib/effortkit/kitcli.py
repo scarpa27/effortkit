@@ -1,6 +1,7 @@
 """effortkit - the kit command.
 
   effortkit installer [<dir>]        the interactive installer agent for a new project; it writes only in <dir>
+  effortkit init <url-or-path> [--name N] [--out answers.json]   detect the answers of a new instance, with evidence
   effortkit install --dir <dir> [--config <answers.json>] [--name N] [--repo-url U | --repo-path P] [--base REF]
                                      create an instance without the agent, from answers
   effortkit install --dir <dir> --repair   restore the layout, the hooks and the generated files of an instance
@@ -20,12 +21,27 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import core, gen, improve, install, skills
+from . import core, detect, gen, improve, install, skills
 
 
 def die(msg: str, code: int = 2) -> None:
     print(f"effortkit: {msg}", file=sys.stderr)
     sys.exit(code)
+
+
+def cmd_init(a) -> None:
+    try:
+        answers = detect.detect(a.source, a.name)
+    except RuntimeError as exc:
+        die(str(exc))
+    text = json.dumps(answers, indent=2) + "\n"
+    for key, why in answers["_evidence"].items():
+        print(f"  {key}: {why}", file=sys.stderr)
+    if a.out:
+        Path(a.out).expanduser().write_text(text, encoding="utf-8")
+        print(f"wrote {a.out}. Review it, then: effortkit install --dir <dir> --config {a.out}", file=sys.stderr)
+    else:
+        sys.stdout.write(text)
 
 
 def cmd_install(a) -> None:
@@ -174,6 +190,8 @@ def cmd_selftest(a) -> None:
 def main(argv: list[str]) -> None:
     ap = argparse.ArgumentParser(prog="effortkit", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = ap.add_subparsers(dest="cmd")
+    p = sp.add_parser("init"); p.add_argument("source"); p.add_argument("--name"); p.add_argument("--out")
+    p.set_defaults(fn=cmd_init)
     p = sp.add_parser("install"); p.add_argument("--dir", required=True); p.add_argument("--config")
     p.add_argument("--name"); p.add_argument("--repo-url"); p.add_argument("--repo-path"); p.add_argument("--base")
     p.add_argument("--no-clone", action="store_true"); p.add_argument("--repair", action="store_true")

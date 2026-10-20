@@ -449,6 +449,8 @@ class InstallerGate(unittest.TestCase):
             ok("shell", {"command": f"git -C {target} add -A && git -C {target} commit -m 'Describe the project'"})
             ok("shell", {"command": "git clone --depth 50 https://example.com/x.git /tmp/effortkit-probe-x"})
             ok("shell", {"command": f"effortkit install --dir {target} --config /tmp/a.json"})
+            ok("shell", {"command": "effortkit init https://example.com/x.git --out /tmp/effortkit-answers-x.json"})
+            no("shell", {"command": f"effortkit init https://example.com/x.git --out {HOME}/answers.json"})
             no("shell", {"command": f"git -C {core.KIT} commit -m x"})
             no("shell", {"command": "git push"})
             no("shell", {"command": "cat ~/.git-credentials"})

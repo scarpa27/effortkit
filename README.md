@@ -25,12 +25,15 @@ bin/effortkit installer ~/efforts/<name>
 The installer inspects the project, proposes every setting with its evidence, asks only what the repository cannot tell, installs the instance, and writes the project steering.
 It writes only in the target folder and in `/tmp`, and every command that changes something asks you first.
 
-Without the agent, from an answers file (`docs/config.md` describes every key):
+Without the agent, in two steps:
 
 ```bash
+effortkit init <git-url-or-clone> --out answers.json    # detects the settings and prints the evidence of each
 effortkit install --dir ~/efforts/<name> --config answers.json
-effortkit check ~/efforts/<name> --validate
 ```
+
+`effortkit init` reads the history and the build files: the default branch, the commit and ticket convention, the branch naming, the test commands, the tree setup and the commands that publish.
+Review the answers before the install. `docs/config.md` describes every key, and `effortkit check <dir> --validate` checks an instance.
 
 Then put the instance command on PATH under a name of your choice:
 

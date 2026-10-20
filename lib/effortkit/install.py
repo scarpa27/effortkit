@@ -164,7 +164,10 @@ def install(target: Path, answers: dict, clone: bool = True, log=print) -> core.
                            "or run `effortkit install --repair` to restore its layout.")
     if target.exists() and any(p.name not in (".install-gate.log",) for p in target.iterdir()):
         raise InstallError(f"{target} exists and is not empty. Choose a new folder.")
-    cfg = core.merge({"effortkit": core.SCHEMA}, answers)
+    # Keys that start with _ explain the answers, for example the _evidence of `effortkit init`. They stay out of the
+    # config, and the full answers go into the reference material, where a later improvement round can read them.
+    record = dict(answers)
+    cfg = core.merge({"effortkit": core.SCHEMA}, {k: v for k, v in answers.items() if not k.startswith("_")})
     cfg["effortkit"] = core.SCHEMA
     cfg.setdefault("name", target.name)
     if not core.NAME_RE.match(cfg["name"]):
@@ -207,6 +210,7 @@ def install(target: Path, answers: dict, clone: bool = True, log=print) -> core.
     if errors:
         raise InstallError("the config has problems:\n  " + "\n  ".join(errors))
     inst = core.Instance(target)
+    (inst.reference / "install-answers.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
     if not (inst.overlay / "steering/project.md").exists():
         (inst.overlay / "steering/project.md").write_text(project_steering(inst.config), encoding="utf-8")
     for keep in ("agents", "skills"):

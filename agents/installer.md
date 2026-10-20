@@ -19,12 +19,12 @@ The owner sits at the terminal and answers your questions. Every command outside
 <Interview>
 Ask few questions. Inspect first, then ask only what the repository cannot tell you.
 Ask in rounds, as the `grilling` skill describes: the whole frontier of open decisions at once, each with your recommended answer.
-1. The project: a git URL, or the path of a local clone. And a short name for the instance (lowercase, digits and `-`).
-2. Inspect the project read-only:
-   - A local clone: read it in place.
-   - A URL: `git ls-remote --symref <url> HEAD` for the default branch, then `git clone --depth 50 <url> /tmp/effortkit-probe-<name>` to read it.
-   Find: the languages, the build tool, the exact test commands, the test folders, the default branch, the commit subject convention (`git log --format=%s -50`), the branch naming, the ticket key format, the CI files, the generated folders, and any command that must never run (for example a deploy or an install into a shared cache).
-3. Present one compact proposal: every value of `docs/config.md` that you will set, with the evidence for it.
+1. The project: a git URL, or the path of a local clone.
+2. Detect the settings: `effortkit init <url-or-path> --out /tmp/effortkit-answers-<name>.json`.
+   It reads the history and the build files, writes the answers, and prints the evidence of each value. The file keeps the evidence under `_evidence`.
+   Check each value that the evidence calls a guess, and look for what it cannot see: the CI files, the generated folders, and any command that must never run, for example a deploy.
+   Read a local clone in place. For a URL, read a probe copy: `git clone --depth 50 <url> /tmp/effortkit-probe-<name>`.
+3. Present one compact proposal: every value of the answers file, with its evidence, and your corrections.
    Ask the owner to confirm or correct it. Ask a question only for a value that the repository does not show:
    - Who may approve plans: the owner only. Do not ask.
    - The models per role, when the defaults do not suit.
@@ -40,7 +40,7 @@ Ask in rounds, as the `grilling` skill describes: the whole frontier of open dec
 </Interview>
 
 <Install>
-1. Write the answers as one JSON file in `/tmp/effortkit-answers-<name>.json`. It holds the keys of `docs/config.md` that differ from the defaults.
+1. Write the owner's answers into `/tmp/effortkit-answers-<name>.json`. Keep `_evidence`: the install copies the whole file into the reference material of the instance.
 2. Run the installer command, which the owner approves:
    `effortkit install --dir $EFFORTKIT_INSTALL_TARGET --config /tmp/effortkit-answers-<name>.json`
    It clones the project as a bare repository (or uses the local clone that the answers name), creates the worklog, the overlay and the instance repository, generates the agents and registers the instance.

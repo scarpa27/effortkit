@@ -19,7 +19,7 @@ description: "Lane rules for an effort of kind overlay: a change to this instanc
   A skill of the overlay replaces the kit skill of the same name. `skills.<role>` gives it to one role only.
 - A command rule: `instance.json` - `tests.patterns`, `forbidden_commands`, `tester_globs`, `commit`, `push`.
   `docs/config.md` in the kit describes every key.
-- A fact about the project code, not about the workflow: the knowledge inbox, not the overlay.
+- A fact about the project code, not about the workflow: a fact note in the inbox, not the overlay.
 
 ## Check
 

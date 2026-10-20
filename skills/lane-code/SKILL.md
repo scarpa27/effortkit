@@ -22,4 +22,4 @@ description: "Lane rules for an effort of kind code: a change to the project, a 
 
 - The developer commits after each wave, on the effort branch.
 - The owner pushes and opens the merge request.
-- After the merge, merge the knowledge inbox entries of the effort, then the owner closes the effort with `effort close <effort>`.
+- After the merge, merge the fact notes of the effort into the knowledge topics, then the owner closes the effort with `effort close <effort>`.

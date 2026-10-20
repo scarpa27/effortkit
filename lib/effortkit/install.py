@@ -173,7 +173,7 @@ def install(target: Path, answers: dict, clone: bool = True, log=print) -> core.
     if not (repo.get("url") or repo.get("path")):
         raise InstallError("the answers need repo.url (a clone source) or repo.path (an existing clone)")
     target.mkdir(parents=True, exist_ok=True)
-    for d in ("worklog/plan", "worklog/knowledge/inbox", "worklog/improvements/inbox", "worklog/improvements/done",
+    for d in ("worklog/plan", "worklog/inbox", "worklog/knowledge", "worklog/improvements/done",
               "worklog/reference", "trees", "locks", "overlay/steering", "overlay/agents", "overlay/skills", "bin"):
         (target / d).mkdir(parents=True, exist_ok=True)
     product = target / "product.git"
@@ -236,7 +236,7 @@ def install(target: Path, answers: dict, clone: bool = True, log=print) -> core.
 def repair(target: Path, log=print) -> core.Instance:
     """Restore the layout, the hooks and the generated files of an existing instance. The config stays."""
     inst = core.Instance(target)
-    for d in (inst.plan, inst.inbox, inst.reports, inst.reports_done, inst.reference, inst.trees, inst.locks,
+    for d in (inst.plan, inst.inbox, inst.knowledge, inst.reports_done, inst.reference, inst.trees, inst.locks,
               inst.overlay / "steering", inst.overlay / "agents", inst.overlay / "skills", inst.bin):
         d.mkdir(parents=True, exist_ok=True)
     for r in {inst.product, inst.root}:

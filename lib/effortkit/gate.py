@@ -23,10 +23,10 @@ from pathlib import Path
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(os.path.realpath(__file__)).parents[1]))
-    from effortkit import core, improve, repohooks  # noqa: E402
+    from effortkit import core, inbox, repohooks  # noqa: E402
     from effortkit.shellparse import (LITERAL, SUBST, ShellText, split_outer, strip_prefix)  # noqa: E402
 else:
-    from . import core, improve, repohooks
+    from . import core, inbox, repohooks
     from .shellparse import LITERAL, SUBST, ShellText, split_outer, strip_prefix
 
 within, real = core.within, core.real
@@ -119,11 +119,11 @@ def zone(p: Path, ctx: core.Context) -> tuple[str, str]:
         if len(rest) == 1 and rest[0] == "status.md":
             return "status", name
         return ("own-plan" if e and e.name == name else "other-plan"), name
-    for base, z in ((INST.inbox, "inbox"), (INST.reports, "inbox"), (INST.knowledge, "knowledge")):
+    for base, z in ((INST.inbox, "inbox"), (INST.knowledge, "knowledge")):
         if within(p, real(base)):
             return z, ""
     for base, label in ((INST.improvements, "the improvement records, which the effort command keeps. "
-                                            "Write a report into the improvements inbox instead"),
+                                            "Write a note of type workflow into the inbox instead"),
                         (INST.reference, "the reference material, which is read-only"),
                         (INST.worklog, "the worklog repository, which the effort command commits"),
                         (INST.trees, "the tree of another effort"),
@@ -172,12 +172,12 @@ def check_target(p: Path, ctx: core.Context, role: str, via: str) -> bool:
         raise Refusal("scope", f"{via} would change {p}: {label}.")
     if z == "outside":
         raise Refusal("scope", f"{via} would change {p}, which is outside the instance.",
-                      "Write only in your tree, your plan folder, the inboxes or /tmp.")
+                      "Write only in your tree, your plan folder, the inbox or /tmp.")
     if z == "knowledge":
         if role == core.SUPERVISOR:
             return False
         raise Refusal("scope", f"{via} would change {p}. Only the supervisor edits the knowledge topic files.",
-                      f"Write the fact into the knowledge inbox: {INST.inbox}/<UTC time>-<effort>-<role>.md")
+                      f"Write the fact as a note of type fact into the inbox: {INST.inbox}/<UTC time>-<effort>-<role>.md")
     if z == "status":
         if role != core.SUPERVISOR:
             raise Refusal("scope", "status.md belongs to the supervisor.",
@@ -658,7 +658,7 @@ def agent_writable(p: Path) -> bool:
     """A folder where a role with a read-only shell can create files."""
     if free_tmp(p):
         return True
-    return INST is not None and (within(p, real(INST.plan)) or within(p, real(INST.inbox)) or within(p, real(INST.reports)))
+    return INST is not None and (within(p, real(INST.plan)) or within(p, real(INST.inbox)))
 
 
 def value_after(args: list[str], *opts: str) -> str | None:
@@ -1082,14 +1082,18 @@ def context() -> None:
                 other = INST.load_effort(name)
                 rel.append(f"{name} ({other.stage()})" if other else name)
             out.append("Related: " + ", ".join(rel))
-        inbox = len(list(INST.inbox.glob("*.md"))) if INST.inbox.is_dir() else 0
-        if inbox:
-            out.append(f"Knowledge inbox: {inbox} entries wait for a merge into the topic files.")
-        pending = improve.pending_reports(INST)
+        notes = inbox.notes(INST)
+        facts = [n for n in notes if n.type == "fact"]
+        if facts:
+            out.append(f"Inbox: {len(facts)} fact notes wait for a merge into the knowledge topics.")
+        pending = [n for n in notes if n.type == "workflow"]
         if pending:
             threshold = INST.config["improve"].get("threshold", 3)
             hint = " Propose `effort improve` to the owner." if len(pending) >= threshold else ""
-            out.append(f"Workflow reports: {len(pending)} wait for triage.{hint}")
+            out.append(f"Inbox: {len(pending)} workflow notes wait for triage.{hint}")
+        unknown = [n.name for n in notes if n.type == "unknown"]
+        if unknown:
+            out.append(f"Inbox: {len(unknown)} notes have no type line: {', '.join(unknown[:5])}.")
         stale = gen_stale()
         if stale:
             out.append(f"The generated agent configs are out of date ({stale}). Ask the owner to run `effort gen`.")
@@ -1114,15 +1118,13 @@ def gen_stale() -> str:
 
 def duties(role: str) -> None:
     spec = INST.roles.get(role, {})
-    report_dir = INST.reports
     lines = [f"== Before you finish ({role}) ==",
              f"1. Artifact: write {spec.get('artifact', 'your result')} in the plan folder named in your brief.",
              "2. Findings about the project: one file per finding in findings/<UTC time>-<role>.md of the plan folder. "
              "List them under ## NEW ISSUES in your reply. Do not fix unrelated problems.",
-             f"3. Workflow report: when the workflow slowed you down or misled you, write one file per problem in "
-             f"{report_dir}/<UTC time>-<effort>-{role}.md, in the format of the contract. "
-             "End your reply with ## IMPROVEMENT: <file names> or ## IMPROVEMENT: none.",
-             f"4. A durable fact about the project goes into the knowledge inbox {INST.inbox}."]
+             f"3. Notes: one file per note in {INST.inbox}/<UTC time>-<effort>-{role}.md, in the formats of the contract. "
+             "type: workflow for a problem that the workflow caused you, type: fact for a durable fact about the project. "
+             "End your reply with ## IMPROVEMENT: <the workflow note files> or ## IMPROVEMENT: none."]
     if INST.gated(role):
         help_ = INST.config["commit"]["subject_help"]
         lines.append(f'Commit the wave on the effort branch: git commit -m "{help_}". Never push.')

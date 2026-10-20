@@ -91,7 +91,7 @@ kiro-cli shows every installed skill to every agent of the instance. The table n
 | `overlay/agents/<role>.md` | Project rules for one role. The generator appends the file to the kit prompt of the role. The prompt of a custom role is this file alone. |
 | `overlay/skills/<name>/` | Project skills, and the lane skills of custom kinds. Copy a skill from another place into this folder. A skill here replaces the kit skill of the same name. |
 
-Prompts, steering and overlay files may use these placeholders: `{{project}}`, `{{description}}`, `{{instance}}`, `{{kit}}`, `{{plan}}`, `{{knowledge}}`, `{{knowledge_inbox}}`, `{{reports}}`, `{{reference}}`, `{{trees}}`, `{{overlay}}`, `{{contract}}`, `{{commit_help}}`, `{{ticket_example}}`, `{{default_base}}`, `{{test_commands}}`, `{{roles_list}}`, `{{kinds_list}}`, `{{tester_globs}}`.
+Prompts, steering and overlay files may use these placeholders: `{{project}}`, `{{description}}`, `{{instance}}`, `{{kit}}`, `{{plan}}`, `{{knowledge}}`, `{{inbox}}`, `{{reference}}`, `{{trees}}`, `{{overlay}}`, `{{contract}}`, `{{commit_help}}`, `{{ticket_example}}`, `{{default_base}}`, `{{test_commands}}`, `{{roles_list}}`, `{{kinds_list}}`, `{{tester_globs}}`.
 An unknown placeholder is an error of `effort gen` and of `effortkit check`.
 
 ## Example answers

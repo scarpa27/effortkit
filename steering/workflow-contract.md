@@ -81,7 +81,7 @@ The plan-review page shows each block as a card, so keep the format exact.
 ## Read and write
 
 - Every session may read every plan folder, the knowledge and the reference material.
-- A session writes only in its own tree, its own plan folder, the knowledge inbox, the workflow-report inbox and `/tmp`.
+- A session writes only in its own tree, its own plan folder, the inbox `{{inbox}}/` and `/tmp`.
   The role limits the tree further: the developer writes the whole tree, the tester only {{tester_globs}}, the other roles nothing.
 
 ## Approval
@@ -96,19 +96,21 @@ The plan-review page shows each block as a card, so keep the format exact.
 1. Write your artifact in the plan folder.
 2. Record each new finding about the project as its own file in `findings/`, and list it under `## NEW ISSUES` in your reply.
    Do not fix an unrelated problem, and do not widen the task.
-3. Record each problem that the workflow caused you as a workflow report in `{{reports}}/`, and name the files under `## IMPROVEMENT` in your reply, or write `## IMPROVEMENT: none`.
-4. Put a durable fact about the project into the knowledge inbox `{{knowledge_inbox}}/`.
+3. Write a note into the inbox `{{inbox}}/` for each problem that the workflow caused you (`type: workflow`) and for each durable fact about the project (`type: fact`).
+   Name the workflow notes under `## IMPROVEMENT` in your reply, or write `## IMPROVEMENT: none`.
 
-## Workflow reports and the improvement loop
+## The inbox and the improvement loop
 
-- A workflow report says what made the work slower or worse, and what would be better.
-  The format is in the prompt of every role: the lines `scope`, `area` and `severity`, then `## What happened`, `## What would be better` and `## Evidence`.
+- The inbox holds one note per file. Its first line is its type, and the type decides who reads it.
+- A note of `type: fact` holds a durable fact about the project, with its knowledge topic. The supervisor merges it into the topic when the effort closes.
+- A note of `type: workflow` says what made the work slower or worse, and what would be better.
+  The formats are in the prompt of every role.
 - `scope: kit` is the generic machinery in `{{kit}}`. `scope: overlay` is the rules of {{project}} in `{{overlay}}` and `{{instance}}/instance.json`.
-- The gates log every refusal, and the effort command logs every run. The improver reads those signals too, so a report needs no copy of a refusal: it adds what the refusal cannot say.
-- `effort improve` starts an improvement round: an effort of kind `kit` or `overlay` in which the improver triages the reports and plans the fixes.
+- The gates log every refusal, and the effort command logs every run. The improver reads those signals too, so a workflow note needs no copy of a refusal: it adds what the refusal cannot say.
+- `effort improve` starts an improvement round: an effort of kind `kit` or `overlay` in which the improver triages the workflow notes and plans the fixes.
   The owner approves that plan like any other, and the developer implements it in a tree of the layer.
-- `effort close` of an improvement effort files each report that `triage.md` decided into `worklog/improvements/done/` and the ledger.
-- The aim is fewer reports per effort over time. `effort improve stats` shows the trend.
+- `effort close` of an improvement effort files each workflow note that `triage.md` decided into `worklog/improvements/done/` and the ledger.
+- The aim is fewer workflow notes per effort over time. `effort improve stats` shows the trend.
 
 ## Skills
 
@@ -121,8 +123,8 @@ The plan-review page shows each block as a card, so keep the format exact.
 ## Knowledge
 
 - Topic files: `{{knowledge}}/<topic>.md`.
-- During an effort, do not edit a topic file. Write one inbox file instead, and name the target topic in its first line.
-- The supervisor merges the inbox into the topic files when the effort closes.
+- During an effort, do not edit a topic file. Write a fact note into the inbox instead.
+- The supervisor merges the fact notes of an effort into the topic files when the effort closes, and deletes each merged note.
 
 ## Git
 

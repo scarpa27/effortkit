@@ -53,7 +53,7 @@ BUILTIN_ROLES = {
     "debugger": {"profile": "reader+tests", "artifact": "investigation.md",
                  "description": "Traces a symptom through the source to a confirmed root cause"},
     "improver": {"profile": "reader", "artifact": "triage.md, task.md and questions.md",
-                 "description": "Triages workflow reports and plans fixes to the kit or the project overlay"},
+                 "description": "Triages the workflow notes and plans fixes to the kit or the project overlay"},
 }
 
 # repo: product (the project), kit (this kit), instance (the instance repository) or None (no tree).
@@ -252,9 +252,8 @@ class Instance:
         self.worklog = self.root / "worklog"
         self.plan = self.worklog / "plan"
         self.knowledge = self.worklog / "knowledge"
-        self.inbox = self.knowledge / "inbox"
+        self.inbox = self.worklog / "inbox"
         self.improvements = self.worklog / "improvements"
-        self.reports = self.improvements / "inbox"
         self.reports_done = self.improvements / "done"
         self.ledger = self.improvements / "ledger.jsonl"
         self.reference = self.worklog / "reference"

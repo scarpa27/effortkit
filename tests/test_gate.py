@@ -214,9 +214,9 @@ class WriteScope(GateCase):
         (self.r.plan("e1") / "task.md").write_text("# Task, changed\n")
         self.refuse("developer", "write", self.w(self.t1 / "x.txt"), "changed after the approval", cwd=self.t1)
 
-    def test_own_plan_and_the_inboxes_need_no_approval(self):
+    def test_own_plan_and_the_inbox_need_no_approval(self):
         inst = self.r.inst
-        for p in (self.r.plan("e1") / "dev-notes.md", inst.inbox / "x.md", inst.reports / "20261023T000000Z-e1-developer.md",
+        for p in (self.r.plan("e1") / "dev-notes.md", inst.inbox / "20261023T000000Z-e1-developer.md",
                   Path("/tmp/ek-scratch-file.txt")):
             self.allow("developer", "write", self.w(p), cwd=self.t1)
             self.allow("explorer", "write", self.w(p), cwd=self.t1)
@@ -405,16 +405,19 @@ class Hooks(GateCase):
         code, out = self.r.gate("developer", "", {}, mode="duties")
         self.assertEqual(code, 0)
         self.assertIn("dev-notes.md", out)
-        self.assertIn(str(self.r.inst.reports), out)
+        self.assertIn(str(self.r.inst.inbox), out)
         self.assertIn("TOY-NNN: <subject>", out)
 
-    def test_context_names_the_open_reports(self):
+    def test_context_names_the_open_notes(self):
         inst = self.r.inst
-        inst.reports.mkdir(parents=True, exist_ok=True)
         for i in range(3):
-            (inst.reports / f"20261023T00000{i}Z-e1-explorer.md").write_text("scope: kit\n\n## What happened\nx\n")
+            (inst.inbox / f"20261023T00000{i}Z-e1-explorer.md").write_text("type: workflow\nscope: kit\n\n## What happened\nx\n")
+        (inst.inbox / "20261023T000009Z-e1-tester.md").write_text("type: fact\ntopic: testing\n\nThe suite needs a cache.\n")
+        (inst.inbox / "20261023T000010Z-e1-debugger.md").write_text("A note without a header.\n")
         code, out = self.r.gate(None, "", {}, mode="context")
-        self.assertIn("Workflow reports: 3 wait for triage. Propose `effort improve`", out)
+        self.assertIn("Inbox: 3 workflow notes wait for triage. Propose `effort improve`", out)
+        self.assertIn("Inbox: 1 fact notes wait for a merge into the knowledge topics.", out)
+        self.assertIn("Inbox: 1 notes have no type line: 20261023T000010Z-e1-debugger.md.", out)
 
     def test_a_refusal_is_logged_for_the_improver(self):
         self.refuse("developer", "shell", self.cmd("git push"), "never push", cwd=self.t1)

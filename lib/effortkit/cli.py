@@ -32,7 +32,7 @@ import threading
 import time
 from pathlib import Path
 
-from . import core, gen, improve, repohooks
+from . import core, gen, improve, inbox, repohooks
 
 SELF = core.KIT / "bin/effort"
 INST: core.Instance
@@ -484,9 +484,13 @@ def cmd_status(a) -> None:
               f"{f'{len(live)} live/{len(runs)}':12} {e.data.get('branch') or '-'}")
     for e, r in live_runs:
         print(f"  live run {r['id']} ({r['role']}, {e.name}) since {r['created']}")
-    pending = improve.pending_reports(INST)
+    notes = inbox.notes(INST)
+    pending = [n for n in notes if n.type == "workflow"]
     if pending:
-        print(f"workflow reports: {len(pending)} open. `effort improve` starts a round, `effort improve stats` shows the trend.")
+        print(f"inbox: {len(pending)} workflow notes. `effort improve` starts a round, `effort improve stats` shows the trend.")
+    facts = [n for n in notes if n.type == "fact"]
+    if facts:
+        print(f"inbox: {len(facts)} fact notes wait for a merge into the knowledge topics.")
     if a.collisions:
         product = [e for e in efforts if e.tree and e.data.get("repo") == str(INST.product) and not e.closed]
         files = {e.name: changed_files(e) for e in product}
@@ -538,9 +542,9 @@ def cmd_close(a) -> None:
     live = [r["id"] for r in core.list_runs(e) if core.run_state(e, r["id"])[0] == "live"]
     if live:
         die(f"effort {e.name} has live runs: {', '.join(live)}")
-    pending = [p.name for p in INST.inbox.glob(f"*-{e.name}-*.md")] if INST.inbox.is_dir() else []
+    pending = [n.name for n in inbox.facts_of(INST, e.name)]
     if pending and not a.force:
-        die(f"merge the knowledge inbox entries of {e.name} into the topic files first: {', '.join(pending)}. Or use --force.")
+        die(f"merge the fact notes of {e.name} into the knowledge topics first: {', '.join(pending)}. Or use --force.")
     head = None
     if e.tree and e.tree.is_dir():
         if git("status", "--porcelain", cwd=e.tree, check=False) and not a.force:
@@ -612,10 +616,7 @@ def cmd_kb(a) -> None:
         names = ", ".join(sorted(p.stem for p in INST.knowledge.glob("*.md"))) or "none yet"
         die(f"no knowledge topic '{topic}'. Topics: {names}, or 'new' for a new topic.")
     effort = a.effort or os.environ.get("EFFORTKIT_EFFORT") or "home"
-    INST.inbox.mkdir(parents=True, exist_ok=True)
-    path = INST.inbox / f"{core.stamp()}-{effort}-{a.role}.md"
-    path.write_text(f"target: {topic}.md\n\n{' '.join(a.text).strip()}\n", encoding="utf-8")
-    print(path)
+    print(inbox.write(INST, "fact", {"topic": topic}, " ".join(a.text), effort, a.role))
 
 
 def cmd_report(a) -> None:
@@ -631,12 +632,12 @@ def round_brief(e: core.Effort, reports: list[improve.Report], since: str) -> Pa
              f"The effort's tree `{e.tree}` is a checkout of that layer, on branch `{e.data.get('branch')}`.",
              f"Plan folder: `{e.plan}`. Write `triage.md`, `task.md` and `questions.md` there.",
              f"Signals of the gates and the runs since {since or 'the start'}: `{e.plan / 'signals.md'}`.",
-             f"Earlier decisions: `{INST.ledger}`.", "", "## Reports"]
+             f"Earlier decisions: `{INST.ledger}`.", "", "## Workflow notes"]
     lines += [f"- `{r.path}` ({r.severity}, area {r.area}, from {r.effort or '?'} {r.role or ''})".rstrip() for r in reports]
     if not reports:
         lines.append("- none. Work from the signals alone.")
     lines += ["", "## Out of scope",
-              "- Changes to the other layer. Correct the scope line of such a report and decide `deferred`.",
+              "- Changes to the other layer. Correct the scope line of such a note and decide `deferred`.",
               "- Implementation. The developer implements after the owner approves `task.md`."]
     brief = e.plan / "briefs" / f"{core.stamp()}-improver.md"
     brief.parent.mkdir(parents=True, exist_ok=True)

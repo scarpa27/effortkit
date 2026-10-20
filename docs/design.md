@@ -14,7 +14,7 @@
 |---|---|---|
 | Kit | prompts, contract, lane skills, gate, effort command, generator, defaults | an effort of kind `kit`, merged by the owner into `main` of the kit |
 | Instance | `instance.json` and `overlay/` | an effort of kind `overlay`, merged by the owner into `main` of the instance repository |
-| Worklog | plans, knowledge, workflow reports, ledger | the agents (plan folders, inboxes) and the effort command (records, snapshots) |
+| Worklog | plans, the inbox, knowledge, ledger | the agents (plan folders, the inbox) and the effort command (records, snapshots) |
 | Generated | `.kiro/` and `bin/effort` of an instance | `effort gen`, automatic at session start when the inputs changed |
 
 - Live sessions use the merged kit and the merged instance only. A change under work lives in a tree, so a half-edited gate cannot break a running session.
@@ -27,11 +27,13 @@
 - The kit pins each vendored skill in `skills/skills-lock.json` with its source, version, licence and hash, so a copy that drifts from its source shows in `effortkit check` and in the tests.
 - A skill that names another skill as its next step ships with that skill: caveman with ultracave and megacave, grill-me with grilling.
 
-## 4. The improvement loop
+## 4. The inbox and the improvement loop
+
+- One inbox holds every note of the agents and the owner. Its type line routes it: `fact` to the knowledge topics at effort close, `workflow` to the next improvement round.
 
 - Sources: the reports that the agents write at the end of each stage, the reports of the owner (`effort report`), the gate refusals, and the failed or lost runs.
 - A round triages the reports of one layer. The improver writes a decision per report into `triage.md`, and a normal plan. The owner approves the plan like any other.
-- `effort close` of a round moves each decided report to `done/<round>/` and appends one ledger line. A deferred report stays in the inbox.
+- `effort close` of a round moves each decided workflow note to `done/<round>/` and appends one ledger line. A deferred note stays in the inbox.
 - The ledger keeps the reasons of rejected reports, so a later round does not accept the same idea again without new evidence.
 - The trigger is `on-close` with a threshold, or `manual`. A round never starts while another round is open.
 - The measure is the number of reports per effort over time: `effort improve stats`.

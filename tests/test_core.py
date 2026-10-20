@@ -42,5 +42,39 @@ class TestCommandRules(unittest.TestCase):
         self.assertEqual(core.test_patterns(cfg), [core.command_pattern("make test"), r"tox(?: -e \S+)?"])
 
 
+class TestInbox(unittest.TestCase):
+    def setUp(self):
+        from tests.sandbox import FakeInstance
+        self.r = FakeInstance()
+        self.inst = self.r.inst
+
+    def tearDown(self):
+        self.r.cleanup()
+
+    def test_the_type_line_decides_and_a_missing_one_is_inferred(self):
+        from effortkit import inbox
+        box = self.inst.inbox
+        (box / "20261026T080000Z-e1-explorer.md").write_text("type: fact\ntopic: build\n\nThe build needs Java 25.\n")
+        (box / "20261026T080001Z-e1-reviewer.md").write_text("scope: kit\nseverity: blocker\n\n## What happened\nx\n")
+        (box / "20261026T080002Z-e1-tester.md").write_text("topic: testing\n\nThe suite is slow.\n")
+        (box / "20261026T080003Z-e1-debugger.md").write_text("Just text.\n")
+        got = {n.name: (n.type, n.effort, n.role) for n in inbox.notes(self.inst)}
+        self.assertEqual(got, {"20261026T080000Z-e1-explorer.md": ("fact", "e1", "explorer"),
+                               "20261026T080001Z-e1-reviewer.md": ("workflow", "e1", "reviewer"),
+                               "20261026T080002Z-e1-tester.md": ("fact", "e1", "tester"),
+                               "20261026T080003Z-e1-debugger.md": ("unknown", "e1", "debugger")})
+        self.assertEqual([n.name for n in inbox.facts_of(self.inst, "e1")],
+                         ["20261026T080000Z-e1-explorer.md", "20261026T080002Z-e1-tester.md"])
+
+    def test_two_notes_in_one_second_get_two_files(self):
+        from effortkit import inbox
+        a = inbox.write(self.inst, "fact", {"topic": "build"}, "One.", "e1", "explorer")
+        b = inbox.write(self.inst, "fact", {"topic": "build"}, "Two.", "e1", "explorer")
+        self.assertNotEqual(a, b)
+        self.assertEqual({n.effort for n in inbox.notes(self.inst)}, {"e1"})
+        with self.assertRaises(ValueError):
+            inbox.write(self.inst, "idea", {}, "x")
+
+
 if __name__ == "__main__":
     unittest.main()

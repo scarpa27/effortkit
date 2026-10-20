@@ -112,7 +112,7 @@ class EffortCli(unittest.TestCase):
     def test_kb_and_report(self):
         path = self.ok("kb", "add", "project", "The", "build", "needs", "a", "cache.").strip()
         self.assertTrue(path.endswith("-home-owner.md"))
-        self.assertEqual(Path(path).read_text(), "target: project.md\n\nThe build needs a cache.\n")
+        self.assertEqual(Path(path).read_text(), "type: fact\ntopic: project\neffort: home\nrole: owner\n\nThe build needs a cache.\n")
         self.assertIn("no knowledge topic", self.r.effort("kb", "add", "nope", "x").stderr)
         path = self.ok("report", "The tester prompt names no test folder.", "--scope", "overlay",
                        "--area", "prompt:tester", "--severity", "blocker").strip()
@@ -120,6 +120,18 @@ class EffortCli(unittest.TestCase):
         self.assertEqual((rep.scope, rep.area, rep.severity, rep.effort, rep.role),
                          ("overlay", "prompt:tester", "blocker", "home", "owner"))
         rep.path.unlink()
+
+    def test_close_waits_for_the_fact_notes_of_the_effort(self):
+        self.ok("new", "facts-a", "--kind", "triage")
+        self.ok("new", "facts-b", "--kind", "triage")
+        mine = Path(self.ok("kb", "add", "project", "A fact from facts-a.", "--effort", "facts-a", "--role", "explorer").strip())
+        Path(self.ok("kb", "add", "project", "A fact from facts-b.", "--effort", "facts-b", "--role", "explorer").strip())
+        p = self.r.effort("close", "facts-a")
+        self.assertNotEqual(p.returncode, 0)
+        self.assertIn(f"merge the fact notes of facts-a into the knowledge topics first: {mine.name}", p.stderr)
+        mine.unlink()
+        self.ok("close", "facts-a")
+        self.assertIn("inbox: 1 fact notes wait for a merge", self.ok("status"))
 
     def test_gen_check_and_overlay_prompts(self):
         self.assertEqual(self.ok("gen", "--check").strip(), "current")
@@ -180,9 +192,9 @@ class ImprovementLoop(unittest.TestCase):
         self.r.cleanup()
 
     def report(self, name, scope, severity="friction"):
-        self.inst.reports.mkdir(parents=True, exist_ok=True)
-        p = self.inst.reports / name
-        p.write_text(f"scope: {scope}\narea: gate\nseverity: {severity}\n\n## What happened\nx\n")
+        self.inst.inbox.mkdir(parents=True, exist_ok=True)
+        p = self.inst.inbox / name
+        p.write_text(f"type: workflow\nscope: {scope}\narea: gate\nseverity: {severity}\n\n## What happened\nx\n")
         return p
 
     def test_a_round_per_layer_then_settlement_and_stats(self):

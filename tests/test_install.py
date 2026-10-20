@@ -24,7 +24,7 @@ class Install(unittest.TestCase):
         root, env = self.r.root, self.r.env
         cfg = json.loads((root / "instance.json").read_text())
         self.assertEqual((cfg["name"], cfg["repo"]["default_base"]), ("toy", "origin/main"))
-        for d in ("worklog/plan", "worklog/knowledge/inbox", "worklog/improvements/inbox", "trees", "locks",
+        for d in ("worklog/plan", "worklog/inbox", "worklog/knowledge", "worklog/improvements/done", "trees", "locks",
                   "overlay/steering", "overlay/agents", "overlay/skills"):
             self.assertTrue((root / d).is_dir(), d)
         tracked = sh("git", "ls-files", cwd=root, env=env).stdout.split()

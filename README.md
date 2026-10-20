@@ -46,7 +46,7 @@ ln -s ~/efforts/<name>/bin/effort ~/.local/bin/<name>-effort
    The planner writes `task.md` and `questions.md`. The supervisor can show them as a review page.
 4. Approve the plan in the chat: `!effort approve <name>`. Only you can do this. A changed `task.md` needs a new approval.
 5. The supervisor sends the developer, the tester and the reviewer. Each wave ends with a local commit. Agents never push.
-6. You push and open the merge request. After the merge, the supervisor merges the knowledge inbox, and you run `effort close <name>`.
+6. You push and open the merge request. After the merge, the supervisor merges the fact notes of the effort into the knowledge, and you run `effort close <name>`.
 
 Inside the chats, `effort` is the command of the instance, because the session puts the instance's `bin/` first on PATH.
 
@@ -63,15 +63,15 @@ Inside the chats, `effort` is the command of the instance, because the session p
 
 ## The improvement loop
 
-- Every stage ends with the duty to write a workflow report for each problem that the workflow caused: a misleading prompt, a refused command that the task needed, a missing tool, a missing fact.
-  Reports go to `worklog/improvements/inbox/`. You file one yourself with `effort report "<text>" --scope kit|overlay`.
+- Every stage ends with the duty to write notes into the one inbox, `worklog/inbox/`: a `type: workflow` note for each problem that the workflow caused (a misleading prompt, a refused command that the task needed, a missing tool), and a `type: fact` note for each durable fact about the project.
+  You file a workflow note yourself with `effort report "<text>" --scope kit|overlay`, and a fact with `effort kb add <topic> <text>`.
 - The gates log every refusal and the effort command logs every run, so the improver also sees friction that nobody reported.
-- `effort improve` starts a round: one effort of kind `kit` for the kit reports and one of kind `overlay` for the project reports.
-  The improver writes `triage.md` (a decision per report), `task.md` and `questions.md`. You approve the plan like any other.
+- `effort improve` starts a round: one effort of kind `kit` for the kit notes and one of kind `overlay` for the project notes.
+  The improver writes `triage.md` (a decision per note), `task.md` and `questions.md`. You approve the plan like any other.
   The developer implements it in a tree of the kit or of the instance repository, and the tester runs the kit tests.
-- With `improve.trigger: on-close` (the default), `effort close` starts a round in the background when the open reports reach `improve.threshold`.
-- `effort close` of a round files each decided report into `worklog/improvements/done/` and the ledger.
-  `effort improve stats` shows the reports per effort, oldest first. The numbers should fall.
+- With `improve.trigger: on-close` (the default), `effort close` starts a round in the background when the open workflow notes reach `improve.threshold`.
+- `effort close` of a round files each decided note into `worklog/improvements/done/` and the ledger.
+  `effort improve stats` shows the workflow notes per effort, oldest first. The numbers should fall.
 - A kit change reaches every instance after you merge it into `main` of the kit: the gate at once, the prompts after `effort gen`. The supervisor's context says when the configs are out of date.
 
 ## Layout
@@ -91,7 +91,7 @@ effortkit/                       the kit, repository 1
 <instance>/                      repository 2: instance.json and overlay/
   instance.json
   overlay/{steering,agents,skills}/
-  worklog/                       repository 3: plan/, knowledge/, improvements/, reference/
+  worklog/                       repository 3: plan/, inbox/, knowledge/, improvements/, reference/
   product.git/                   bare clone of the project (or repo.path names your clone)
   trees/<effort>/                one worktree per effort
   .kiro/                         generated agent configs, prompts, steering, settings and the skill copies

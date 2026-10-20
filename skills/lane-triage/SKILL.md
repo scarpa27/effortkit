@@ -6,7 +6,7 @@ description: "Lane rules for an effort of kind triage, which has no tree: log an
 # Lane: triage
 
 - A triage effort has no tree.
-  It runs from the instance root and writes only its own plan folder and the inboxes.
+  It runs from the instance root and writes only its own plan folder and the inbox.
 - Logs or a symptom: debugger, with the log paths in the brief.
   If the cause is in the code, propose a code effort for the fix.
 - External facts: researcher, with one named question per call.

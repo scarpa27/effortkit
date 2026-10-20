@@ -1,8 +1,8 @@
 """Workflow reports: what the agents say would make the workflow better, and what the gates and runs show.
 
-An agent writes one report per problem into worklog/improvements/inbox/. The improver triages them in an effort of
-kind kit or overlay and writes its decision per report into triage.md. `effort close` then moves each decided report
-to done/<effort>/ and appends one ledger line, so the inbox holds only open reports.
+An agent writes one note of type workflow per problem into the inbox. The improver triages them in an effort of kind
+kit or overlay and writes its decision per note into triage.md. `effort close` then moves each decided note to
+done/<effort>/ and appends one ledger line, so the inbox holds only open notes.
 """
 from __future__ import annotations
 
@@ -13,14 +13,12 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import core
+from . import core, inbox
 
 SCOPES = ("kit", "overlay", "unsure")
 SEVERITIES = ("blocker", "friction", "idea")
 DECISIONS = ("accepted", "rejected", "deferred", "merged", "done")
-HEADER = re.compile(r"^([a-z][a-z-]*)\s*:\s*(.*)$")
-STAMP = re.compile(r"^(\d{8}T\d{6}Z)(?:-\d+)?-(.+)\.md$")
-# A triage line: "- <report file>: <decision> - <reason>". The reason is optional.
+# A triage line: "- <note file>: <decision> - <reason>". The reason is optional.
 TRIAGE = re.compile(r"^\s*[-*]\s+`?([\w.-]+\.md)`?\s*:\s*(" + "|".join(DECISIONS) + r")\b\s*[-:]*\s*(.*)$", re.I)
 
 
@@ -40,64 +38,26 @@ class Report:
         return self.path.name
 
 
-def _split_name(inst: core.Instance, name: str) -> tuple[str, str, str]:
-    """(created, effort, role) from <UTC stamp>-<effort>-<role>.md. Role names hold dashes, so known roles go first."""
-    m = STAMP.match(name)
-    if not m:
-        return "", "", ""
-    rest = m.group(2)
-    roles = sorted(set(inst.roles) | {core.SUPERVISOR, "owner", "gate"}, key=len, reverse=True)
-    for role in roles:
-        if rest.endswith("-" + role):
-            return m.group(1), rest[:-len(role) - 1], role
-    return m.group(1), rest, ""
+def as_report(note: inbox.Note) -> Report:
+    scope = note.head.get("scope", "unsure").lower()
+    severity = note.head.get("severity", "friction").lower()
+    return Report(path=note.path, scope=scope if scope in SCOPES else "unsure", area=note.head.get("area", "other"),
+                  severity=severity if severity in SEVERITIES else "friction", effort=note.effort, role=note.role,
+                  created=note.created, title=note.title)
 
 
 def parse_report(inst: core.Instance, path: Path) -> Report:
-    try:
-        text = path.read_text(encoding="utf-8", errors="replace")
-    except OSError:
-        text = ""
-    head: dict[str, str] = {}
-    title = ""
-    for line in text.splitlines():
-        if not line.strip():
-            if head:
-                break
-            continue
-        m = HEADER.match(line.strip())
-        if not m or line.startswith("#"):
-            break
-        head[m.group(1).lower()] = m.group(2).strip()
-    for line in text.splitlines():
-        if line.startswith("#"):
-            title = line.lstrip("# ").strip()
-            break
-    created, effort, role = _split_name(inst, path.name)
-    scope = head.get("scope", "unsure").lower()
-    severity = head.get("severity", "friction").lower()
-    return Report(path=path, scope=scope if scope in SCOPES else "unsure", area=head.get("area", "other"),
-                  severity=severity if severity in SEVERITIES else "friction",
-                  effort=head.get("effort") or effort, role=head.get("role") or role, created=created,
-                  title=head.get("title") or title)
+    return as_report(inbox.parse(inst, path))
 
 
 def pending_reports(inst: core.Instance) -> list[Report]:
-    if not inst.reports.is_dir():
-        return []
-    return [parse_report(inst, p) for p in sorted(inst.reports.glob("*.md"))]
+    return [as_report(n) for n in inbox.notes(inst, "workflow")]
 
 
 def write_report(inst: core.Instance, text: str, scope: str = "unsure", area: str = "other",
                  severity: str = "friction", effort: str = "home", role: str = "owner") -> Path:
-    inst.reports.mkdir(parents=True, exist_ok=True)
-    base = f"{core.stamp()}-{effort}-{role}"
-    path, n = inst.reports / f"{base}.md", 1
-    while path.exists():
-        path, n = inst.reports / f"{core.stamp()}-{n}-{effort}-{role}.md", n + 1
-    path.write_text(f"scope: {scope}\narea: {area}\nseverity: {severity}\neffort: {effort}\nrole: {role}\n\n"
-                    f"## What happened\n{text.strip()}\n", encoding="utf-8")
-    return path
+    return inbox.write(inst, "workflow", {"scope": scope, "area": area, "severity": severity},
+                       f"## What happened\n{text.strip()}", effort, role)
 
 
 # ---------------------------------------------------------------- signals that need no agent
@@ -197,7 +157,7 @@ def settle(inst: core.Instance, e: core.Effort) -> list[str]:
     summary = []
     with open(inst.ledger, "a", encoding="utf-8") as ledger:
         for name, decision, reason in decided:
-            src = inst.reports / name
+            src = inst.inbox / name
             if decision == "deferred" or not src.is_file():
                 summary.append(f"{name}: {decision}{'' if src.is_file() else ' (not in the inbox)'}")
                 continue

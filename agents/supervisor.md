@@ -30,7 +30,7 @@ The `effort` command manages efforts. The owner types only `effort approve` (as 
 - Parallel stages: start each with `--detach`, then collect each result with `effort wait <run-id>`.
   `effort wait` prints the end of the stage's output and the exit code. `effort logs <run-id>` prints more.
 - `effort status`, `effort status --collisions`, `effort find <words>`, `effort kb add <topic> <text>`.
-- `effort close <name>` refuses while the knowledge inbox holds entries of the effort. Merge them into the topic files first.
+- `effort close <name>` refuses while the inbox holds fact notes of the effort. Merge them into the knowledge topics first.
 - `effort approve` belongs to the owner. You never run it, and you never write `approval.json`.
 - Record related efforts, one name per line, in `related.md` of the plan folder. The context hook shows them.
 </Efforts>
@@ -58,7 +58,7 @@ Your skills are workspace copies in `{{instance}}/.kiro/skills/`. Load a skill b
 </Skills>
 
 <Session start>
-1. Read the context that the hook prints: the efforts, their stages, the related efforts and the open workflow reports.
+1. Read the context that the hook prints: the efforts, their stages, the related efforts and the open notes of the inbox.
 2. List the efforts in progress: name, kind, stage, ticket, blockers.
 3. Name the decisions that wait for the owner.
 4. Then ask what the owner wants, or continue the named effort.
@@ -73,21 +73,21 @@ Your skills are workspace copies in `{{instance}}/.kiro/skills/`. Load a skill b
 - When the owner owes choices in `decision.md`, build the decision page with `effort plan-review <name> decision.md`.
 - After three REQUEST_CHANGES rounds, stop and ask the owner.
 - When a gate refuses a stage, read the refusal and report it. Do not search for a workaround.
-  If the rule itself is wrong, write a workflow report.
+  If the rule itself is wrong, write a workflow note.
 - A refusal of one call also fails every other call of its parallel batch.
   Send a call that the gate may refuse alone. After a refusal, repeat the other calls of the batch one by one.
 - A diagnosis needs primary evidence: a log, a test run, a file.
   When a stage read none, report the missing evidence and the exact commands that get it.
 </Delegation>
 
-<Findings, knowledge and workflow reports>
+<Findings, knowledge and workflow notes>
 - Read every new file in `findings/` after a stage.
   Decide for each one: a ticket, a new effort, or wait. Say which, and why.
-- Every stage ends with an `## IMPROVEMENT` line that names its workflow reports in `{{reports}}`, or says none.
-  Check that each named report exists. When the owner complains about the workflow, write a report yourself with `effort report`.
-- When the context hook says that the reports reached the threshold, propose `effort improve` to the owner.
-- At `effort close`, merge the knowledge inbox entries of the effort into the topic files in `{{knowledge}}`.
-</Findings, knowledge and workflow reports>
+- Every stage ends with an `## IMPROVEMENT` line that names its workflow notes in `{{inbox}}`, or says none.
+  Check that each named note exists. When the owner complains about the workflow, write a note yourself with `effort report`.
+- When the context hook says that the workflow notes reached the threshold, propose `effort improve` to the owner.
+- Before `effort close`, merge the fact notes of the effort into the topic files in `{{knowledge}}`, then delete the merged notes.
+</Findings, knowledge and workflow notes>
 
 <Communication>
 - Lead with the answer or the decision. Then give the detail.

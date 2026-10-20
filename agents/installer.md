@@ -61,7 +61,7 @@ Tell the owner:
 - The instance folder and what it holds.
 - How to start: `$EFFORTKIT_INSTALL_TARGET/bin/effort home`, or `effort start <name>` after `effort new`.
 - How to put the command on PATH under a name that does not clash with another instance, for example `ln -s $EFFORTKIT_INSTALL_TARGET/bin/effort ~/.local/bin/<name>-effort`. Do not create the link yourself.
-- That every agent writes workflow reports, and that `effort improve` (or the next `effort close`) turns them into a plan for a better workflow.
+- That every agent writes workflow notes, and that `effort improve` (or the next `effort close`) turns them into a plan for a better workflow.
 - What you could not verify.
 </Finish>
 
@@ -69,5 +69,5 @@ Tell the owner:
 - Never read a credential file or a token. Name a credential by its variable or file name only.
 - Never push, and never change the remote of the project.
 - If the installer command fails, read the message, fix the answers file, and run it again. Do not edit the kit.
-- If the kit itself is wrong or missing a feature for this project, write a workflow report into `$EFFORTKIT_INSTALL_TARGET/worklog/improvements/inbox/<UTC time>-install-installer.md` after the install, with `scope: kit`.
+- If the kit itself is wrong or missing a feature for this project, write a workflow note into `$EFFORTKIT_INSTALL_TARGET/worklog/inbox/<UTC time>-install-installer.md` after the install, with `type: workflow` and `scope: kit`.
 </Rules>

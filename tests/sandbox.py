@@ -62,7 +62,7 @@ class FakeInstance:
         self.dir = Path(tempfile.mkdtemp(prefix="ek-test-"))
         self.root = self.dir / "inst"
         cfg = core.merge(CONFIG, config or {})
-        for d in ("worklog/plan", "worklog/knowledge/inbox", "worklog/improvements/inbox", "worklog/reference",
+        for d in ("worklog/plan", "worklog/inbox", "worklog/knowledge", "worklog/reference",
                   "locks", "trees", ".kiro/agents", "overlay/steering", "overlay/agents", "product.git"):
             (self.root / d).mkdir(parents=True, exist_ok=True)
         (self.root / "instance.json").write_text(json.dumps(cfg, indent=2), encoding="utf-8")

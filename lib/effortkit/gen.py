@@ -299,7 +299,7 @@ def installer_skills() -> dict[str, Path]:
 
 def installer_config() -> dict:
     gate = shlex.join([PYTHON, str(core.KIT / "lib/effortkit/gate.py"), "--install-target-env", "pre", core.INSTALLER])
-    read_only = al.allowlist(al.READ_ONLY, al.FORGE_READ, [rf"(?:{al.PLAIN}*/)?effortkit +(?:help|instances|--help|check|mcp-servers|skills){al.ARGS}"])
+    read_only = al.allowlist(al.READ_ONLY, al.FORGE_READ, [rf"(?:{al.PLAIN}*/)?effortkit +(?:help|instances|--help|check|doctor|mcp-servers|skills){al.ARGS}"])
     return {"name": core.INSTALLER, "description": "Sets up effortkit for a new project in an interactive interview",
             "model": core.DEFAULTS["models"]["default"], "prompt": f"file://{core.KIT}/.kiro/agents/installer.md",
             "tools": ["read", "write", "glob", "grep", "code", "shell", "thinking"],

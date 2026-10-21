@@ -16,10 +16,18 @@ An improvement loop turns those reports into approved changes, so the workflow f
 
 ## Set up a new project
 
-Interactive, with the installer agent, from the folder of the kit:
+Once per machine, from the folder of the kit:
 
 ```bash
-bin/effortkit installer ~/efforts/<name>
+bin/effortkit setup      # links effortkit into ~/.local/bin, then runs effortkit doctor
+```
+
+`effortkit doctor` checks Python, git, the kiro-cli version and login, tmux, rg, npx, commit signing, the kit skills and every registered instance.
+
+Then, interactive, with the installer agent:
+
+```bash
+effortkit installer ~/efforts/<name>
 ```
 
 The installer inspects the project, proposes every setting with its evidence, asks only what the repository cannot tell, installs the instance, and writes the project steering.
@@ -117,7 +125,9 @@ effortkit/                       the kit, repository 1
 | `effort find <words>`, `effort kb add <topic> <text>` | Search the plans, add a knowledge entry. |
 | `effort plan-review <name> [decision.md]` | A review page of the plan or of the open decisions. |
 | `effort preflight <name> [--fix]`, `effort gen [--check]` | Checks, hooks and generated configs. |
-| `effortkit instances`, `effortkit reports --scope kit` | Every registered instance, and the open kit reports across them. |
+| `effortkit setup`, `effortkit doctor [--instance <dir>]` | Put effortkit on PATH once per machine, and check the machine, the kit and the instances. |
+| `effortkit init <repo> --out <file>`, `effortkit install --dir <dir> --config <file>` | Detect the answers of a new instance, with evidence, and install it. |
+| `effortkit instances`, `effortkit reports --scope kit` | Every registered instance, and the open kit notes across them. |
 | `effortkit skills [lock]` | The shipped skills, their sources and licences. `lock` records the hashes after a change. |
 
 ## Safety

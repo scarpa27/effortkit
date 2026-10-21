@@ -796,7 +796,7 @@ def analyze(words: list[str], out: list[str], cwd: Path) -> dict:
             r["targets"].append(target(f"{kit_dir}/skills/skills-lock.json", cwd))
         else:
             # check renders the config in memory, and the others list. install and installer change things.
-            r["opaque"] = sub not in ("check", "instances", "reports", "mcp-servers", "skills", "help")
+            r["opaque"] = sub not in ("check", "doctor", "instances", "reports", "mcp-servers", "skills", "help")
     elif verb == "kiro-cli":
         r["opaque"] = plain[:1] not in (["agent"], ["settings"]) and not any(x in ("--version", "--help", "--list-models") for x in a)
     elif verb not in READ_VERBS:

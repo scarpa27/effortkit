@@ -1,5 +1,7 @@
 """effortkit - the kit command.
 
+  effortkit setup [--bin DIR] [--force]   once per machine: put effortkit on PATH, then run the doctor
+  effortkit doctor [--instance DIR]  check the machine, the kit and the registered instances
   effortkit installer [<dir>]        the interactive installer agent for a new project; it writes only in <dir>
   effortkit init <url-or-path> [--name N] [--out answers.json]   detect the answers of a new instance, with evidence
   effortkit install --dir <dir> [--config <answers.json>] [--name N] [--repo-url U | --repo-path P] [--base REF]
@@ -21,12 +23,38 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import core, detect, gen, improve, install, skills
+from . import core, detect, doctor, gen, improve, install, skills
 
 
 def die(msg: str, code: int = 2) -> None:
     print(f"effortkit: {msg}", file=sys.stderr)
     sys.exit(code)
+
+
+def cmd_setup(a) -> None:
+    bin_dir = Path(a.bin).expanduser() if a.bin else core.HOME / ".local/bin"
+    link, target = bin_dir / "effortkit", core.KIT / "bin/effortkit"
+    if link.is_symlink() and core.real(link) == core.real(target):
+        print(f"{link} links to this kit already")
+    elif (link.exists() or link.is_symlink()) and not a.force:
+        die(f"{link} exists and is not the command of this kit. Use --force to replace it, or choose --bin.")
+    else:
+        bin_dir.mkdir(parents=True, exist_ok=True)
+        if link.exists() or link.is_symlink():
+            link.unlink()
+        link.symlink_to(target)
+        print(f"linked {link} -> {target}")
+    if str(bin_dir) not in os.environ.get("PATH", "").split(os.pathsep):
+        print(f"note: {bin_dir} is not on PATH. Add it to the PATH of your shell.")
+    gen.generate_kit()
+    print("--- doctor")
+    code = doctor.everything()
+    print("next: effortkit installer <dir> for a new project, or effortkit init <repo> --out answers.json")
+    sys.exit(code)
+
+
+def cmd_doctor(a) -> None:
+    sys.exit(doctor.everything(core.real(Path(a.instance).expanduser()) if a.instance else None))
 
 
 def cmd_init(a) -> None:
@@ -190,6 +218,9 @@ def cmd_selftest(a) -> None:
 def main(argv: list[str]) -> None:
     ap = argparse.ArgumentParser(prog="effortkit", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = ap.add_subparsers(dest="cmd")
+    p = sp.add_parser("setup"); p.add_argument("--bin"); p.add_argument("--force", action="store_true")
+    p.set_defaults(fn=cmd_setup)
+    p = sp.add_parser("doctor"); p.add_argument("--instance"); p.set_defaults(fn=cmd_doctor)
     p = sp.add_parser("init"); p.add_argument("source"); p.add_argument("--name"); p.add_argument("--out")
     p.set_defaults(fn=cmd_init)
     p = sp.add_parser("install"); p.add_argument("--dir", required=True); p.add_argument("--config")

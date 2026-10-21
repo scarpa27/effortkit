@@ -47,7 +47,7 @@ RESEARCH = [
 ]
 # The effort commands that only read, or that write one inbox file. The gate refuses the others anyway.
 EFFORT_READ = [rf"(?:{PLAIN}*/)?effort +(?:status|find|logs|wait|preflight|help|kb|report|plan-review|improve +stats){ARGS}",
-               rf"(?:{PLAIN}*/)?effortkit +(?:check|instances|reports|mcp-servers|skills|help){ARGS}"]
+               rf"(?:{PLAIN}*/)?effortkit +(?:check|doctor|instances|reports|mcp-servers|skills|help){ARGS}"]
 
 
 def segment(pattern: str) -> str:

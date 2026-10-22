@@ -53,6 +53,8 @@ From measurements with kiro-cli 2.31.1 and 2.33.1, on Linux:
 - kiro-cli 2.33.1 gives a custom agent every skill of `~/.kiro/skills` and every file of `~/.kiro/steering`, besides its own resources, and every skill of the workspace `.kiro/skills/` (measured 2026-10-23).
   With an absolute `KIRO_HOME` that holds only `settings/`, the agent sees the workspace skills and its own steering, and the MCP servers still work.
   So every session of an instance runs with `KIRO_HOME=<instance>/.kiro-home`, which links only `cli.json` and `mcp.json` of the machine.
+- Measured again on kiro-cli 2.34.0 on 2026-10-26: a gate refusal still blocks a trusted write, and the `KIRO_HOME` isolation holds.
+  2.34.0 also loads the `README.md` of the workspace as context. That is the project's own file, so it is no leak.
 - For the same reason, every agent of an instance sees every installed skill. The skill list of a role decides what is installed and what the role's resources name, not what the agent can see.
 - All measurements ran on Linux. On macOS the process check uses `ps`, because macOS has no `/proc`, but nobody has measured the hooks there.
 

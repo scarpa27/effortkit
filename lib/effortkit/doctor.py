@@ -13,8 +13,8 @@ from pathlib import Path
 
 from . import core, gen, install, repohooks, skills
 
-# The kiro-cli version on which the gate behaviour was measured. Another version can change hooks or trust.
-MEASURED_KIRO = "2.33"
+# The kiro-cli versions on which the gate behaviour was measured. Another version can change hooks or trust.
+MEASURED_KIRO = ("2.33", "2.34")
 
 
 def run(*args: str, timeout: int = 60) -> subprocess.CompletedProcess | None:
@@ -55,9 +55,10 @@ def machine() -> list[tuple[str, str, str]]:
         out.append(("FAIL", "kiro-cli", "missing. Install kiro-cli first"))
     else:
         v = version(p.stdout)
-        same = v.startswith(MEASURED_KIRO + ".") or v == MEASURED_KIRO
+        same = any(v == m or v.startswith(m + ".") for m in MEASURED_KIRO)
         out.append(("ok" if same else "WARN", "kiro-cli", f"{v}" + ("" if same else
-                    f". The gate was measured on {MEASURED_KIRO}.x: run `effortkit selftest` and one stage before you trust it")))
+                    f". The gate was measured on {' and '.join(m + '.x' for m in MEASURED_KIRO)}: "
+                    "run `effortkit selftest` and one stage before you trust it")))
         who = run("kiro-cli", "whoami")
         logged_in = bool(who and who.returncode == 0 and "logged in" in who.stdout.lower())
         out.append(("ok" if logged_in else "FAIL", "kiro-cli login", "logged in" if logged_in else "not logged in. Run kiro-cli login"))

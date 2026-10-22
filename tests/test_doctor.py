@@ -53,7 +53,7 @@ class Doctor(unittest.TestCase):
             p = m.kit("doctor")
             self.assertEqual(p.returncode, 1)
             self.assertIn("FAIL kiro-cli login: not logged in. Run kiro-cli login", p.stdout)
-            self.assertIn("WARN kiro-cli: 2.40.0. The gate was measured on", p.stdout)
+            self.assertIn("WARN kiro-cli: 2.40.0. The gate was measured on 2.33.x and 2.34.x", p.stdout)
         finally:
             m.cleanup()
 

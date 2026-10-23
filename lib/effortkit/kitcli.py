@@ -215,7 +215,7 @@ def cmd_selftest(a) -> None:
     sys.exit(subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-t", "."], cwd=core.KIT).returncode)
 
 
-def main(argv: list[str]) -> None:
+def parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="effortkit", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = ap.add_subparsers(dest="cmd")
     p = sp.add_parser("setup"); p.add_argument("--bin"); p.add_argument("--force", action="store_true")
@@ -236,5 +236,10 @@ def main(argv: list[str]) -> None:
     p.set_defaults(fn=cmd_skills)
     p = sp.add_parser("selftest"); p.set_defaults(fn=cmd_selftest)
     p = sp.add_parser("help"); p.set_defaults(fn=lambda a: ap.print_help())
+    return ap
+
+
+def main(argv: list[str]) -> None:
+    ap = parser()
     args = ap.parse_args(argv or ["help"])
     args.fn(args)

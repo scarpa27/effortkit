@@ -74,22 +74,26 @@ class Setup(unittest.TestCase):
     def test_setup_links_the_command_once_and_keeps_a_foreign_file(self):
         m = Machine()
         try:
+            kit = m.dir / "kit"
+            shutil.copytree(core.KIT, kit, ignore=shutil.ignore_patterns(".git", ".kiro", ".kiro-home", "__pycache__"))
+            setup = lambda *args: sh(sys.executable, kit / "bin/effortkit", "setup", *args, env=m.env, check=False)  # noqa: E731
             target = m.dir / "home-bin"
-            p = m.kit("setup", "--bin", target)
-            self.assertIn(f"linked {target}/effortkit -> {core.KIT}/bin/effortkit", p.stdout)
+            p = setup("--bin", target)
+            self.assertIn(f"linked {target}/effortkit -> {kit}/bin/effortkit", p.stdout)
             self.assertIn(f"note: {target} is not on PATH", p.stdout)
-            self.assertEqual(core.real(target / "effortkit"), core.real(core.KIT / "bin/effortkit"))
-            self.assertIn("links to this kit already", m.kit("setup", "--bin", target).stdout)
+            self.assertEqual(core.real(target / "effortkit"), core.real(kit / "bin/effortkit"))
+            self.assertTrue((kit / ".kiro/agents/installer.json").is_file())
+            self.assertIn("links to this kit already", setup("--bin", target).stdout)
             (target / "effortkit").unlink()
             (target / "effortkit").write_text("#!/bin/sh\necho other\n")
-            p = m.kit("setup", "--bin", target)
+            p = setup("--bin", target)
             self.assertEqual(p.returncode, 2)
             self.assertIn("is not the command of this kit", p.stderr)
             self.assertEqual((target / "effortkit").read_text(), "#!/bin/sh\necho other\n")
-            m.kit("setup", "--bin", target, "--force")
+            setup("--bin", target, "--force")
             self.assertTrue((target / "effortkit").is_symlink())
             env = {**m.env, "PATH": f"{target}{os.pathsep}{m.env['PATH']}"}
-            p = sh(sys.executable, EFFORTKIT, "doctor", env=env, check=False, cwd=m.dir)
+            p = sh(sys.executable, kit / "bin/effortkit", "doctor", env=env, check=False, cwd=m.dir)
             self.assertIn(f"ok   effortkit on PATH: {target}/effortkit", p.stdout)
         finally:
             m.cleanup()

@@ -53,14 +53,16 @@ class ShippedSkills(unittest.TestCase):
                 self.assertIn("The owner allowed it in the kit on", entry["license"], name)
                 self.assertTrue(entry.get("origin"), name)
 
-    def test_no_prompt_steering_or_skill_names_the_origin_project(self):
+    def test_no_readme_doc_prompt_steering_or_skill_names_the_origin_project(self):
         import re
+        files = [core.KIT / "README.md", core.KIT / "docs/guide.md", core.KIT / "docs/config.md"]
         for folder in ("agents", "steering", "skills"):
-            for f in (core.KIT / folder).rglob("*"):
-                # The lock records where each skill came from, and no agent loads it.
-                if f.is_file() and f.name != skills.LOCK_NAME:
-                    hits = re.findall(ORIGIN_TERMS, f.read_text(encoding="utf-8", errors="replace"))
-                    self.assertEqual(hits, [], f)
+            files += [f for f in (core.KIT / folder).rglob("*") if f.is_file()]
+        for f in files:
+            # The lock records where each skill came from, and no agent loads it.
+            if f.name != skills.LOCK_NAME:
+                hits = re.findall(ORIGIN_TERMS, f.read_text(encoding="utf-8", errors="replace"))
+                self.assertEqual(hits, [], f)
 
     def test_no_shipped_skill_names_a_path_of_this_machine(self):
         home = str(Path.home())

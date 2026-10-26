@@ -1,11 +1,18 @@
 # effortkit design record
 
-## 1. Origin
+## 1. Scope
 
 - effortkit is the generic core of an earlier agentic workflow that served one project.
-- It keeps: efforts with a plan folder, a tree and a branch; the home and effort supervisors; headless stages with `effort run`; the approval by hash; the gate with its shell parser; the commit-msg and pre-push hooks; the knowledge inbox; the review pages.
+- It keeps:
+  - efforts with a plan folder, a tree and a branch,
+  - the home supervisor and the effort supervisors,
+  - headless stages with `effort run`,
+  - the approval by hash,
+  - the gate with its shell parser,
+  - the commit-msg and pre-push hooks,
+  - the inbox and the review pages.
 - It leaves out every rule of that project.
-- Each dropped rule that a project still needs comes back as config (`tests.patterns`, `forbidden_commands`, `tree_setup`, `secrets`) or as overlay text.
+  Each rule that a project still needs comes back as config (`tests.commands`, `forbidden_commands`, `tree_setup`, `secrets`) or as overlay text.
 - A skill that only one project needs belongs in the overlay of the instance of that project.
 
 ## 2. Layers
@@ -31,12 +38,12 @@
 
 - One inbox holds every note of the agents and the owner. Its type line routes it: `fact` to the knowledge topics at effort close, `workflow` to the next improvement round.
 
-- Sources: the reports that the agents write at the end of each stage, the reports of the owner (`effort report`), the gate refusals, and the failed or lost runs.
-- A round triages the reports of one layer. The improver writes a decision per report into `triage.md`, and a normal plan. The owner approves the plan like any other.
+- Sources: the workflow notes that the agents write at the end of each stage, the notes of the owner (`effort report`), the gate refusals, and the failed or lost runs.
+- A round triages the workflow notes of one layer. The improver writes a decision per note into `triage.md`, and a normal plan. The owner approves the plan like any other.
 - `effort close` of a round moves each decided workflow note to `done/<round>/` and appends one ledger line. A deferred note stays in the inbox.
-- The ledger keeps the reasons of rejected reports, so a later round does not accept the same idea again without new evidence.
+- The ledger keeps the reasons of rejected notes, so a later round does not accept the same idea again without new evidence.
 - The trigger is `on-close` with a threshold, or `manual`. A round never starts while another round is open.
-- The measure is the number of reports per effort over time: `effort improve stats`.
+- The measure is the number of workflow notes per effort over time: `effort improve stats`.
 
 ## 5. Measured facts that the design depends on
 
@@ -71,13 +78,13 @@ From measurements with kiro-cli 2.31.1 and 2.33.1, on Linux:
 
 - Recommendation: A.
 
-## D2: Where kit reports from several instances meet
+## D2: Where kit notes from several instances meet
 
-- Today each instance triages its own kit reports. `effortkit reports --scope kit` lists them across instances.
+- Today each instance triages its own kit notes. `effortkit reports --scope kit` lists them across instances.
 
 | Option | Effect |
 | --- | --- |
 | A: per instance, as today | Simple. Two instances can fix the same kit problem twice. |
-| B: one kit round reads the kit reports of every registered instance | One fix per problem. The round must file reports in other instances' worklogs. |
+| B: one kit round reads the kit notes of every registered instance | One fix per problem. The round must file notes in other instances' worklogs. |
 
 - Recommendation: B, after two instances exist.

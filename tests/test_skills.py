@@ -15,8 +15,19 @@ from effortkit import core, gen, install, skills
 WORKFLOW_SKILLS = {"lavish", "caveman", "asd-ste100", "grill-me", "web-search", "plan-review"}
 # Generic skills of the owner that the kit ships too.
 OWNER_SKILLS = {"diagnostic-experiment-matrix", "engineering-writeup"}
-# Names of the project that the kit came from. The prompts, the steering and the skills must stay free of them.
-ORIGIN_TERMS = r"(?!)"
+
+
+def private_terms() -> list[str]:
+    """Names that no tracked file may hold: of a company, of a project, of a machine. One regex per line.
+
+    The list stays outside the repository, because a list of the names would itself mention them.
+    """
+    path = core.config_home() / "private-terms"
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    return [l.strip() for l in lines if l.strip() and not l.startswith("#")]
 
 
 class ShippedSkills(unittest.TestCase):
@@ -53,16 +64,18 @@ class ShippedSkills(unittest.TestCase):
                 self.assertIn("The owner allowed it in the kit on", entry["license"], name)
                 self.assertTrue(entry.get("origin"), name)
 
-    def test_no_readme_doc_prompt_steering_or_skill_names_the_origin_project(self):
+    def test_no_tracked_file_holds_a_private_term(self):
         import re
-        files = [core.KIT / "README.md", core.KIT / "docs/guide.md", core.KIT / "docs/config.md"]
-        for folder in ("agents", "steering", "skills"):
-            files += [f for f in (core.KIT / folder).rglob("*") if f.is_file()]
-        for f in files:
-            # The lock records where each skill came from, and no agent loads it.
-            if f.name != skills.LOCK_NAME:
-                hits = re.findall(ORIGIN_TERMS, f.read_text(encoding="utf-8", errors="replace"))
-                self.assertEqual(hits, [], f)
+        terms = private_terms()
+        if not terms:
+            self.skipTest(f"no private terms in {core.config_home() / 'private-terms'}")
+        rule = re.compile("|".join(f"(?:{x})" for x in terms), re.I)
+        files = subprocess.run(["git", "ls-files"], cwd=core.KIT, capture_output=True, text=True).stdout.split()
+        hits = []
+        for name in files:
+            text = (core.KIT / name).read_text(encoding="utf-8", errors="replace")
+            hits += [f"{name}: {m.group(0)}" for m in rule.finditer(text)]
+        self.assertEqual(hits, [])
 
     def test_no_shipped_skill_names_a_path_of_this_machine(self):
         home = str(Path.home())

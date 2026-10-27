@@ -1,5 +1,7 @@
 # effortkit
 
+![Two layouts of the same project. In a standard clone, the code, the plans and the agent files share one checkout. In an effortkit instance, they live apart, and each effort has its own worktree.](docs/effortkit-layout-neon-green.svg)
+
 effortkit is an agentic workflow for kiro-cli.
 You can deploy it to any software project.
 

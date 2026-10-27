@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">A plain git clone vs. effortkit</title>
+  <desc id="desc">Two folder layouts for the same project. Left, a plain git clone: the product code, the plans and the agent setup share one working copy with one checked-out branch, and every session of every project loads the machine skills and steering in ~/.kiro. Right, effortkit: one kit per machine installs one instance per project. The instance is its own git repository. It holds a bare clone of the project, one worktree and branch per effort, a separate worklog repository for plans, inbox and knowledge, the project rules, the generated agents and skill copies, and a kiro home that links only the machine settings.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+    </marker>
+    <style>
+      text { font-family: 'DejaVu Sans', Verdana, Arial, sans-serif; fill: #111827; }
+      .title { font-size: 26px; font-weight: bold; }
+      .sub { font-size: 15px; fill: #4b5563; }
+      .head { font-size: 19px; font-weight: bold; }
+      .headsub { font-weight: normal; fill: #4b5563; }
+      .dir { font-family: 'DejaVu Sans Mono', Menlo, Consolas, monospace; font-size: 14px; font-weight: bold; }
+      .root { font-family: 'DejaVu Sans Mono', Menlo, Consolas, monospace; font-size: 15px; font-weight: bold; }
+      .cap { font-size: 12.5px; fill: #374151; }
+      .tag { font-size: 12px; fill: #4b5563; }
+      .flow { font-size: 12.5px; font-style: italic; fill: #4b5563; }
+      .note { font-size: 14px; font-weight: bold; }
+      .point { font-size: 15px; fill: #1f2937; }
+      .key { font-size: 13.5px; fill: #374151; }
+      .code { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; }
+      .plan { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.5; }
+      .agent { fill: #ffedd5; stroke: #ea580c; stroke-width: 1.5; }
+      .gen { stroke-dasharray: 6 4; }
+      .box { fill: #f9fafb; stroke: #9ca3af; stroke-width: 1.5; }
+      .dot { fill: #6b7280; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="800" fill="#ffffff"/>
+  <text class="title" x="600" y="50" text-anchor="middle">A plain git clone vs. effortkit</text>
+  <text class="sub" x="600" y="80" text-anchor="middle">The same project, two layouts. The colours show what each folder holds.</text>
+  <line x1="600" y1="108" x2="600" y2="735" stroke="#e5e7eb" stroke-width="1.5"/>
+
+  <!-- Left: a plain clone -->
+  <text class="head" x="40" y="130">Normal use<tspan class="headsub">: one git clone</tspan></text>
+
+  <rect class="agent" x="40" y="146" width="530" height="46" rx="8"/>
+  <text class="dir" x="54" y="165">~/.kiro/</text>
+  <text class="tag" x="556" y="165" text-anchor="end">one per machine</text>
+  <text class="cap" x="54" y="183">machine skills and steering</text>
+
+  <line x1="80" y1="196" x2="80" y2="230" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+  <text class="flow" x="96" y="218">every session of every project loads it</text>
+
+  <rect class="box" x="40" y="236" width="530" height="278" rx="12"/>
+  <text class="root" x="54" y="260">my-project/</text>
+  <text class="cap" x="54" y="278">your clone: you and the agents work here</text>
+
+  <rect class="code" x="54" y="292" width="502" height="46" rx="8"/>
+  <text class="dir" x="68" y="311">.git/</text>
+  <text class="cap" x="68" y="329">history, one branch checked out</text>
+
+  <rect class="code" x="54" y="346" width="502" height="46" rx="8"/>
+  <text class="dir" x="68" y="365">src/<tspan dx="10">tests/</tspan><tspan dx="10">docs/</tspan></text>
+  <text class="cap" x="68" y="383">product code, the only working copy</text>
+
+  <rect class="plan" x="54" y="400" width="502" height="46" rx="8"/>
+  <text class="dir" x="68" y="419">.plan/</text>
+  <text class="cap" x="68" y="437">plans and notes, inside the product tree</text>
+
+  <rect class="agent" x="54" y="454" width="502" height="46" rx="8"/>
+  <text class="dir" x="68" y="473">.kiro/<tspan dx="10">AGENTS.md</tspan></text>
+  <text class="cap" x="68" y="491">agent setup, inside the product tree</text>
+
+  <rect x="40" y="534" width="530" height="88" rx="10" fill="#f3f4f6"/>
+  <text class="note" x="58" y="568">A second task at the same time?</text>
+  <text class="cap" x="58" y="592">git stash and git switch, or clone the project again</text>
+
+  <circle class="dot" cx="46" cy="657" r="3.5"/>
+  <text class="point" x="58" y="662">One working copy, so one branch at a time.</text>
+  <circle class="dot" cx="46" cy="685" r="3.5"/>
+  <text class="point" x="58" y="690">Plans and agent files sit inside the product tree.</text>
+  <circle class="dot" cx="46" cy="713" r="3.5"/>
+  <text class="point" x="58" y="718">A change in ~/.kiro reaches every project.</text>
+
+  <!-- Right: an effortkit instance -->
+  <text class="head" x="630" y="130">With effortkit<tspan class="headsub">: one instance per project</tspan></text>
+
+  <rect class="agent" x="630" y="146" width="530" height="46" rx="8"/>
+  <text class="dir" x="644" y="165">effortkit/</text>
+  <text class="tag" x="1146" y="165" text-anchor="end">one per machine</text>
+  <text class="cap" x="644" y="183">the kit: prompts, gate, commands and skills</text>
+
+  <line x1="670" y1="196" x2="670" y2="230" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+  <text class="flow" x="686" y="218">installs each instance and generates its agents</text>
+
+  <rect class="box" x="630" y="236" width="530" height="386" rx="12"/>
+  <text class="root" x="644" y="260">~/efforts/my-project/</text>
+  <text class="cap" x="644" y="278">the instance: its own git repository, one per project</text>
+
+  <rect class="code" x="644" y="292" width="502" height="46" rx="8"/>
+  <text class="dir" x="658" y="311">product.git/</text>
+  <text class="cap" x="658" y="329">bare clone of the project, the base of every tree</text>
+
+  <rect class="code" x="644" y="346" width="246" height="46" rx="8"/>
+  <text class="dir" x="658" y="365">trees/task-a/</text>
+  <text class="cap" x="658" y="383">on branch effort/task-a</text>
+  <rect class="code" x="900" y="346" width="246" height="46" rx="8"/>
+  <text class="dir" x="914" y="365">trees/task-b/</text>
+  <text class="cap" x="914" y="383">on branch effort/task-b</text>
+
+  <rect class="plan" x="644" y="400" width="502" height="46" rx="8"/>
+  <text class="dir" x="658" y="419">worklog/</text>
+  <text class="cap" x="658" y="437">its own git repository: plans, inbox, knowledge</text>
+
+  <rect class="agent gen" x="644" y="454" width="502" height="46" rx="8"/>
+  <text class="dir" x="658" y="473">.kiro/<tspan dx="10">bin/effort</tspan></text>
+  <text class="cap" x="658" y="491">agents and skill copies, generated from the kit and the overlay</text>
+
+  <rect class="agent" x="644" y="508" width="502" height="46" rx="8"/>
+  <text class="dir" x="658" y="527">instance.json<tspan dx="10">overlay/</tspan></text>
+  <text class="cap" x="658" y="545">project rules: test commands, commit and push rules</text>
+
+  <rect class="agent gen" x="644" y="562" width="502" height="46" rx="8"/>
+  <text class="dir" x="658" y="581">.kiro-home/</text>
+  <text class="cap" x="658" y="599">links the machine settings only, not the machine skills</text>
+
+  <circle class="dot" cx="636" cy="657" r="3.5"/>
+  <text class="point" x="648" y="662">One worktree per effort, so efforts run in parallel.</text>
+  <circle class="dot" cx="636" cy="685" r="3.5"/>
+  <text class="point" x="648" y="690">The code, the plans and the agent setup live apart.</text>
+  <circle class="dot" cx="636" cy="713" r="3.5"/>
+  <text class="point" x="648" y="718">Each project uses its own copy of every skill.</text>
+
+  <!-- Legend -->
+  <rect class="code" x="123" y="755" width="26" height="16" rx="4"/>
+  <text class="key" x="157" y="768">Project code and history</text>
+  <rect class="plan" x="383" y="755" width="26" height="16" rx="4"/>
+  <text class="key" x="417" y="768">Plans, notes and knowledge</text>
+  <rect class="agent" x="663" y="755" width="26" height="16" rx="4"/>
+  <text class="key" x="697" y="768">Agent setup</text>
+  <rect x="843" y="755" width="26" height="16" rx="4" fill="#ffffff" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text class="key" x="877" y="768">Generated, not tracked by git</text>
+</svg>
